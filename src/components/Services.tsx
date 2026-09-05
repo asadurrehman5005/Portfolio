@@ -1,822 +1,221 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import * as THREE from "three";
+import { useState, useRef, useEffect } from "react";
 import { SERVICES } from "../data/portfolioData";
 
 interface ServicesProps {
   onOpenContact?: () => void;
 }
 
-interface ServiceDetail {
+interface ServiceCardData {
   id: number;
-  number: string;
   title: string;
-  subtitle: string;
+  desc: string;
   category: string;
   accent: string;
-  timeline: string;
-  deliverables: string[];
-  techStack: string[];
-  metrics: { label: string; value: string };
+  image: string;
+  tags: string[];
 }
 
-const SERVICE_DETAILS: ServiceDetail[] = [
+const SERVICE_CARDS: ServiceCardData[] = [
   {
     id: 0,
-    number: "01",
     title: SERVICES[0]?.title || "WEB APPLICATIONS",
-    subtitle: "Full-stack scalable web platforms built with precision architecture, ultra-fast render cycles, and uncompromising UX.",
+    desc: SERVICES[0]?.desc || "Full-stack web apps built to scale and perform at any load.",
     category: "ENGINEERING",
     accent: "#2563EB",
-    timeline: "2 — 6 WEEKS",
-    deliverables: [
-      "Sub-second SSR & dynamic Edge rendering",
-      "Robust TypeScript end-to-end type safety",
-      "Scalable multi-tenant microservices & databases",
-    ],
-    techStack: ["Next.js 15", "React 19", "TypeScript", "Node.js", "PostgreSQL"],
-    metrics: { label: "PAGE SPEED", value: "99/100" },
+    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=560&fit=crop&auto=format",
+    tags: ["React", "Next.js", "TypeScript", "Node.js"],
   },
   {
     id: 1,
-    number: "02",
     title: SERVICES[1]?.title || "MOBILE APPS",
-    subtitle: "Fluid, high-performance cross-platform iOS & Android mobile applications engineered with native gestures and offline-first reliability.",
-    category: "MOBILE NATIVE",
+    desc: SERVICES[1]?.desc || "Cross-platform React Native applications for iOS and Android.",
+    category: "MOBILE",
     accent: "#F43F5E",
-    timeline: "3 — 8 WEEKS",
-    deliverables: [
-      "Smooth 60fps gesture-driven animations",
-      "Offline cache synchronization & push alerts",
-      "Seamless App Store & Google Play distribution",
-    ],
-    techStack: ["React Native", "Expo SDK", "iOS", "Android", "Tailwind"],
-    metrics: { label: "FRAME RATE", value: "60 FPS" },
+    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=560&fit=crop&auto=format",
+    tags: ["React Native", "Expo", "iOS", "Android"],
   },
   {
     id: 2,
-    number: "03",
     title: SERVICES[2]?.title || "AI PRODUCTS",
-    subtitle: "Custom generative AI tools, autonomous agent workflows, and intelligent semantic search engines tailored for high-impact automation.",
+    desc: SERVICES[2]?.desc || "Intelligent tools powered by modern AI and automation.",
     category: "INTELLIGENCE",
     accent: "#10B981",
-    timeline: "2 — 5 WEEKS",
-    deliverables: [
-      "Custom LLM prompts, RAG & vector embeddings",
-      "Ultra-low latency token streaming interfaces",
-      "Automated task orchestration & agent pipelines",
-    ],
-    techStack: ["OpenAI", "LangChain", "FastAPI", "Python", "Pinecone"],
-    metrics: { label: "ACCURACY", value: "99.4%" },
+    image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&h=560&fit=crop&auto=format",
+    tags: ["OpenAI", "LangChain", "FastAPI", "Python"],
   },
   {
     id: 3,
-    number: "04",
     title: SERVICES[3]?.title || "E-COMMERCE",
-    subtitle: "Conversion-optimized digital commerce destinations engineered for seamless checkout journeys, instant search, and high retention.",
+    desc: SERVICES[3]?.desc || "Commerce experiences engineered for conversion and trust.",
     category: "COMMERCE",
     accent: "#F97316",
-    timeline: "3 — 7 WEEKS",
-    deliverables: [
-      "Frictionless 1-click checkout workflows",
-      "Dynamic catalog search with instant filtering",
-      "Stripe, PayPal, and regional payment gateways",
-    ],
-    techStack: ["Next.js", "Shopify API", "Stripe", "Prisma", "Tailwind"],
-    metrics: { label: "CONVERSION", value: "+38% CVR" },
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=560&fit=crop&auto=format",
+    tags: ["Next.js", "Stripe", "Prisma", "High UX"],
   },
   {
     id: 4,
-    number: "05",
     title: SERVICES[4]?.title || "DESIGN SYSTEMS",
-    subtitle: "Scalable, accessible design tokens and component libraries that empower development teams to ship cohesive interfaces faster.",
-    category: "UI / UX CRAFT",
+    desc: SERVICES[4]?.desc || "Scalable component libraries that design teams love.",
+    category: "UI / UX",
     accent: "#7C3AED",
-    timeline: "2 — 4 WEEKS",
-    deliverables: [
-      "WCAG 2.1 AA accessible component tokens",
-      "Figma-to-code automated synchronizations",
-      "Multi-brand theme switching & interactive docs",
-    ],
-    techStack: ["Figma Tokens", "Radix UI", "Tailwind CSS", "Storybook"],
-    metrics: { label: "REUSABILITY", value: "100%" },
+    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&h=560&fit=crop&auto=format",
+    tags: ["Figma", "Tailwind", "Radix UI", "Tokens"],
   },
   {
     id: 5,
-    number: "06",
     title: SERVICES[5]?.title || "INTERACTIVE WEBSITES",
-    subtitle: "Award-caliber interactive digital experiences featuring immersive 3D WebGL environments, inertia physics, and cinematic storytelling.",
+    desc: SERVICES[5]?.desc || "Motion-rich, award-level experiences that capture attention.",
     category: "CREATIVE TECH",
     accent: "#06B6D4",
-    timeline: "3 — 6 WEEKS",
-    deliverables: [
-      "Interactive 3D WebGL geometry & shader effects",
-      "Inertial smooth scroll with spatial depth",
-      "Mobile-optimized GPU resource management",
-    ],
-    techStack: ["Three.js", "WebGL", "GSAP", "GLSL Shaders", "Canvas"],
-    metrics: { label: "GPU PERFORMANCE", value: "OPTIMIZED" },
+    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&h=560&fit=crop&auto=format",
+    tags: ["Three.js", "WebGL", "GSAP", "Shaders"],
   },
   {
     id: 6,
-    number: "07",
     title: SERVICES[6]?.title || "FULL-STACK SYSTEMS",
-    subtitle: "End-to-end digital infrastructure architected for enterprise durability, elastic cloud autoscaling, and zero-downtime deployments.",
+    desc: SERVICES[6]?.desc || "End-to-end digital product development from idea to launch.",
     category: "ARCHITECTURE",
     accent: "#3B82F6",
-    timeline: "4 — 10 WEEKS",
-    deliverables: [
-      "Containerized Docker & Kubernetes architectures",
-      "Automated CI/CD testing and rollout pipelines",
-      "Multi-region caching with Redis and CDN edge",
-    ],
-    techStack: ["NestJS", "PostgreSQL", "Docker", "Redis", "AWS / GCP"],
-    metrics: { label: "AVAILABILITY", value: "99.99%" },
+    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=560&fit=crop&auto=format",
+    tags: ["PostgreSQL", "NestJS", "Docker", "Cloud"],
   },
 ];
 
-/* ─────────────────────────────────────────────────────────────
-   INTERACTIVE MINI WIDGETS FOR EACH SERVICE
-   ───────────────────────────────────────────────────────────── */
+type SlotConfig = {
+  top: string;
+  left: string;
+  width: number;
+  height: number;
+  rx: number;
+  ry: number;
+  rz: number;
+  translateZ: number;
+  scale: number;
+  zIndex: number;
+  floatClass: string;
+  floatDelay: string;
+};
 
-// 1. Web Apps Widget: Interactive Live Code Terminal
-function WebAppWidget({ accent }: { accent: string }) {
-  const [activeTab, setActiveTab] = useState<"app" | "metrics">("app");
+// Desktop positions (Width 1180, Height 560)
+// Slot 0 is ALWAYS the zoomed Center Hero Spotlight!
+const DESKTOP_SLOTS: SlotConfig[] = [
+  { top: "50%", left: "50%", width: 440, height: 300, rx: 0, ry: 0, rz: 0, translateZ: 85, scale: 1.1, zIndex: 45, floatClass: "float-a", floatDelay: "0s" }, // 0: Center Zoomed
+  { top: "19%", left: "19%", width: 250, height: 170, rx: 12, ry: 16, rz: 3, translateZ: -15, scale: 0.95, zIndex: 12, floatClass: "float-b", floatDelay: "0.6s" }, // 1: Upper Left
+  { top: "18%", left: "81%", width: 250, height: 170, rx: 10, ry: -18, rz: -3, translateZ: -15, scale: 0.95, zIndex: 12, floatClass: "float-c", floatDelay: "1.1s" }, // 2: Upper Right
+  { top: "50%", left: "13%", width: 245, height: 165, rx: 4, ry: 20, rz: 4, translateZ: -10, scale: 0.95, zIndex: 14, floatClass: "float-a", floatDelay: "0.8s" }, // 3: Mid Left
+  { top: "50%", left: "87%", width: 245, height: 165, rx: 4, ry: -20, rz: -4, translateZ: -10, scale: 0.95, zIndex: 14, floatClass: "float-b", floatDelay: "1.5s" }, // 4: Mid Right
+  { top: "82%", left: "25%", width: 240, height: 160, rx: -8, ry: 15, rz: 4, translateZ: 0, scale: 0.95, zIndex: 16, floatClass: "float-c", floatDelay: "0.9s" }, // 5: Lower Left
+  { top: "82%", left: "75%", width: 240, height: 160, rx: -8, ry: -15, rz: -4, translateZ: 0, scale: 0.95, zIndex: 16, floatClass: "float-a", floatDelay: "1.8s" }, // 6: Lower Right
+];
 
-  return (
-    <div
-      style={{
-        background: "#12141C",
-        borderRadius: 16,
-        padding: "16px 18px",
-        color: "#FAF9F6",
-        fontFamily: "'JetBrains Mono', monospace",
-        border: "1px solid rgba(255,255,255,0.1)",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.25)",
-        width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#EF4444" }} />
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F59E0B" }} />
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981" }} />
-          <span style={{ fontSize: 9.5, color: "#888", marginLeft: 8 }}>v15.1.0-edge</span>
-        </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          <button
-            onClick={() => setActiveTab("app")}
-            style={{
-              background: activeTab === "app" ? "rgba(255,255,255,0.12)" : "transparent",
-              border: "none",
-              color: activeTab === "app" ? "#fff" : "#777",
-              fontSize: 9,
-              padding: "2px 8px",
-              borderRadius: 4,
-              cursor: "pointer",
-            }}
-          >
-            Server.tsx
-          </button>
-          <button
-            onClick={() => setActiveTab("metrics")}
-            style={{
-              background: activeTab === "metrics" ? "rgba(255,255,255,0.12)" : "transparent",
-              border: "none",
-              color: activeTab === "metrics" ? "#fff" : "#777",
-              fontSize: 9,
-              padding: "2px 8px",
-              borderRadius: 4,
-              cursor: "pointer",
-            }}
-          >
-            Telemetry
-          </button>
-        </div>
-      </div>
+// Mobile positions (Width 390, Height 530)
+// Slot 0 is the zoomed Center Hero Spotlight with ample breathing room for surrounding cards
+const MOBILE_SLOTS: SlotConfig[] = [
+  { top: "44%", left: "50%", width: 248, height: 172, rx: 0, ry: 0, rz: 0, translateZ: 65, scale: 1.05, zIndex: 45, floatClass: "float-a", floatDelay: "0s" }, // 0: Darmayan Zoomed Hero
+  { top: "14%", left: "19%", width: 116, height: 80, rx: 8, ry: 14, rz: 3, translateZ: -15, scale: 0.9, zIndex: 12, floatClass: "float-b", floatDelay: "0.5s" }, // 1: Upper Left
+  { top: "13%", left: "81%", width: 116, height: 80, rx: 8, ry: -14, rz: -3, translateZ: -15, scale: 0.9, zIndex: 12, floatClass: "float-c", floatDelay: "1.1s" }, // 2: Upper Right
+  { top: "46%", left: "9%", width: 110, height: 76, rx: 4, ry: 20, rz: 4, translateZ: -5, scale: 0.9, zIndex: 14, floatClass: "float-a", floatDelay: "0.8s" }, // 3: Mid Left
+  { top: "47%", left: "91%", width: 110, height: 76, rx: 4, ry: -20, rz: -4, translateZ: -5, scale: 0.9, zIndex: 14, floatClass: "float-b", floatDelay: "1.5s" }, // 4: Mid Right
+  { top: "79%", left: "21%", width: 120, height: 82, rx: -6, ry: 12, rz: 4, translateZ: 5, scale: 0.9, zIndex: 16, floatClass: "float-c", floatDelay: "0.9s" }, // 5: Lower Left
+  { top: "80%", left: "79%", width: 120, height: 82, rx: -6, ry: -12, rz: -4, translateZ: 5, scale: 0.9, zIndex: 16, floatClass: "float-a", floatDelay: "1.8s" }, // 6: Lower Right
+];
 
-      {activeTab === "app" ? (
-        <div style={{ fontSize: 11, lineHeight: 1.6, color: "#94A3B8" }}>
-          <div><span style={{ color: "#F43F5E" }}>export default async function</span> <span style={{ color: "#60A5FA" }}>Platform</span>() {"{"}</div>
-          <div style={{ paddingLeft: 12 }}>
-            <span style={{ color: "#A78BFA" }}>const</span> data = <span style={{ color: "#F43F5E" }}>await</span> fetchCore({"{"}
-          </div>
-          <div style={{ paddingLeft: 24, color: "#34D399" }}>
-            ssr: <span style={{ color: "#FBBF24" }}>true</span>, latency: <span style={{ color: "#FBBF24" }}>\"12ms\"</span>, cache: <span style={{ color: "#FBBF24" }}>\"edge\"</span>
-          </div>
-          <div style={{ paddingLeft: 12 }}>{"});"}</div>
-          <div style={{ paddingLeft: 12 }}>
-            <span style={{ color: "#F43F5E" }}>return</span> &lt;<span style={{ color: "#60A5FA" }}>RealtimeStream</span> metrics=&#123;data&#125; /&gt;;
-          </div>
-          <div>{"}"}</div>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "8px 0" }}>
-          <div style={{ background: "rgba(255,255,255,0.04)", padding: "8px 10px", borderRadius: 8 }}>
-            <div style={{ fontSize: 8.5, color: "#888" }}>EDGE LATENCY</div>
-            <div style={{ fontSize: 16, color: "#10B981", fontWeight: 700 }}>12 ms</div>
-          </div>
-          <div style={{ background: "rgba(255,255,255,0.04)", padding: "8px 10px", borderRadius: 8 }}>
-            <div style={{ fontSize: 8.5, color: "#888" }}>LIGHTHOUSE SCORE</div>
-            <div style={{ fontSize: 16, color: "#60A5FA", fontWeight: 700 }}>99 / 100</div>
-          </div>
-        </div>
-      )}
-
-      <div
-        style={{
-          marginTop: 10,
-          paddingTop: 8,
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          fontSize: 9.5,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent, boxShadow: `0 0 8px ${accent}` }} />
-          <span style={{ color: "#CBD5E1" }}>Pipeline: Active</span>
-        </div>
-        <span style={{ color: accent, fontWeight: 700 }}>ZERO DOWNTIME</span>
-      </div>
-    </div>
+export default function Services({ onOpenContact }: ServicesProps) {
+  const [activeId, setActiveId] = useState(0);
+  const [viewMode, setViewMode] = useState<"stage" | "list">("stage");
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
   );
-}
 
-// 2. Mobile Apps Widget: Interactive Smartphone Mockup
-function MobileAppWidget({ accent }: { accent: string }) {
-  const [activeScreen, setActiveScreen] = useState<"feed" | "stats">("feed");
-
-  return (
-    <div
-      style={{
-        background: "#0F1117",
-        borderRadius: 28,
-        padding: "14px 14px 16px",
-        border: "3px solid #2D3748",
-        boxShadow: "0 20px 45px rgba(0,0,0,0.3)",
-        width: "100%",
-        maxWidth: 240,
-        margin: "0 auto",
-        color: "#fff",
-        fontFamily: "'Instrument Sans', sans-serif",
-      }}
-    >
-      {/* Top phone notch & status */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 6px 8px", fontSize: 9 }}>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>9:41</span>
-        <div style={{ width: 50, height: 12, background: "#1F2937", borderRadius: 100 }} />
-        <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-          <span>5G</span>
-          <span style={{ fontSize: 10 }}>●</span>
-        </div>
-      </div>
-
-      {/* Screen Content */}
-      <div style={{ background: "#1A202C", borderRadius: 18, padding: 12, minHeight: 140 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 700 }}>Mobile Native UI</div>
-          <span style={{ fontSize: 8, padding: "2px 6px", borderRadius: 100, background: `${accent}25`, color: accent, fontWeight: 700 }}>
-            60 FPS
-          </span>
-        </div>
-
-        {activeScreen === "feed" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <div style={{ background: "rgba(255,255,255,0.06)", padding: "7px 8px", borderRadius: 10, display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>⚡</span>
-              <div>
-                <div style={{ fontSize: 9.5, fontWeight: 600 }}>Instant Haptics</div>
-                <div style={{ fontSize: 8, color: "#A0AEC0" }}>Native Gestures Active</div>
-              </div>
-            </div>
-            <div style={{ background: "rgba(255,255,255,0.06)", padding: "7px 8px", borderRadius: 10, display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>✓</span>
-              <div>
-                <div style={{ fontSize: 9.5, fontWeight: 600 }}>Offline Sync</div>
-                <div style={{ fontSize: 8, color: "#A0AEC0" }}>Local SQLite Cache</div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "10px 0" }}>
-            <div style={{ fontSize: 24, fontWeight: 800, color: accent }}>0.01s</div>
-            <div style={{ fontSize: 9, color: "#CBD5E1" }}>Gesture Response Latency</div>
-          </div>
-        )}
-      </div>
-
-      {/* Screen Toggle Pills */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
-        <button
-          onClick={() => setActiveScreen("feed")}
-          style={{
-            background: activeScreen === "feed" ? accent : "rgba(255,255,255,0.1)",
-            border: "none",
-            color: "#fff",
-            borderRadius: 100,
-            padding: "3px 10px",
-            fontSize: 8.5,
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          App Feed
-        </button>
-        <button
-          onClick={() => setActiveScreen("stats")}
-          style={{
-            background: activeScreen === "stats" ? accent : "rgba(255,255,255,0.1)",
-            border: "none",
-            color: "#fff",
-            borderRadius: 100,
-            padding: "3px 10px",
-            fontSize: 8.5,
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          Speed
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// 3. AI Products Widget: Interactive AI Agent Simulator
-function AIProductWidget({ accent }: { accent: string }) {
-  const [promptIdx, setPromptIdx] = useState(0);
-  const prompts = [
-    { q: "Synthesize client data pipeline", a: "Constructed RAG vector chain with 99.4% precision and real-time streaming." },
-    { q: "Automate user support workflows", a: "Autonomous agent deployed with multi-turn memory and instant handoff." },
-    { q: "Optimize inference response time", a: "Achieved sub-180ms time-to-first-token using speculative decoding." },
-  ];
-
-  const current = prompts[promptIdx];
-
-  return (
-    <div
-      style={{
-        background: "#0B1317",
-        borderRadius: 16,
-        padding: "16px 18px",
-        color: "#FAF9F6",
-        border: "1px solid rgba(16,185,129,0.25)",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.3)",
-        width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-        fontFamily: "'JetBrains Mono', monospace",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: accent, boxShadow: `0 0 10px ${accent}` }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>AI AGENT // ACTIVE</span>
-        </div>
-        <span style={{ fontSize: 9, color: "#888", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 4 }}>
-          GPT-4o &amp; Claude 3.5
-        </span>
-      </div>
-
-      <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-        <div style={{ fontSize: 9, color: "#888", marginBottom: 3 }}>USER PROMPT:</div>
-        <div style={{ fontSize: 11, color: "#E2E8F0" }}>&ldquo;{current.q}&rdquo;</div>
-      </div>
-
-      <div style={{ background: `${accent}10`, borderRadius: 10, padding: "10px 12px", border: `1px solid ${accent}30` }}>
-        <div style={{ fontSize: 9, color: accent, marginBottom: 3, fontWeight: 700 }}>AGENT OUTPUT (STREAMING):</div>
-        <div style={{ fontSize: 11, color: "#A7F3D0", lineHeight: 1.45 }}>{current.a}</div>
-      </div>
-
-      <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
-        {prompts.map((p, i) => (
-          <button
-            key={p.q}
-            onClick={() => setPromptIdx(i)}
-            style={{
-              background: i === promptIdx ? accent : "rgba(255,255,255,0.06)",
-              color: i === promptIdx ? "#000" : "#94A3B8",
-              border: "none",
-              borderRadius: 6,
-              padding: "4px 8px",
-              fontSize: 8.5,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Prompt 0{i + 1}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// 4. E-Commerce Widget: Interactive Live Commerce Metric Dashboard
-function EcomWidget({ accent }: { accent: string }) {
-  const [units, setUnits] = useState(1);
-  const pricePerUnit = 480;
-
-  return (
-    <div
-      style={{
-        background: "#181410",
-        borderRadius: 16,
-        padding: "16px 18px",
-        color: "#FAF9F6",
-        border: "1px solid rgba(249,115,22,0.25)",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.3)",
-        width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-        fontFamily: "'Instrument Sans', sans-serif",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <div>
-          <div style={{ fontSize: 9, color: "#999", fontFamily: "'JetBrains Mono', monospace" }}>CHECKOUT ORCHESTRATION</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Suntronic Inverter 5kW</div>
-        </div>
-        <div style={{ background: `${accent}20`, border: `1px solid ${accent}`, color: accent, padding: "2px 8px", borderRadius: 100, fontSize: 9.5, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
-          +38% CVR
-        </div>
-      </div>
-
-      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "12px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <div style={{ fontSize: 9, color: "#888" }}>DYNAMIC CART TOTAL</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'JetBrains Mono', monospace" }}>
-            ${(pricePerUnit * units).toLocaleString()} <span style={{ fontSize: 10, color: "#aaa" }}>USD</span>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <button
-            onClick={() => setUnits(Math.max(1, units - 1))}
-            style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            -
-          </button>
-          <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>{units}</span>
-          <button
-            onClick={() => setUnits(units + 1)}
-            style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            +
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 9.5, fontFamily: "'JetBrains Mono', monospace" }}>
-        <div style={{ background: "rgba(255,255,255,0.04)", padding: "6px 8px", borderRadius: 6, color: "#10B981" }}>
-          ✓ 1-Click Apple Pay
-        </div>
-        <div style={{ background: "rgba(255,255,255,0.04)", padding: "6px 8px", borderRadius: 6, color: "#60A5FA" }}>
-          ✓ Sub-second Search
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 5. Design Systems Widget: Interactive Tokens Palette
-function DesignSystemWidget({ accent }: { accent: string }) {
-  const [selectedRadius, setSelectedRadius] = useState<number>(12);
-  const [themeColor, setThemeColor] = useState<string>(accent);
-
-  return (
-    <div
-      style={{
-        background: "#141118",
-        borderRadius: 16,
-        padding: "16px 18px",
-        color: "#FAF9F6",
-        border: `1px solid ${themeColor}35`,
-        boxShadow: "0 18px 40px rgba(0,0,0,0.3)",
-        width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-        fontFamily: "'JetBrains Mono', monospace",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: themeColor }}>DESIGN TOKENS // INTERACTIVE</span>
-        <span style={{ fontSize: 8.5, color: "#888" }}>WCAG AA 100%</span>
-      </div>
-
-      {/* Dynamic Button Preview */}
-      <div style={{ background: "rgba(255,255,255,0.04)", padding: "14px", borderRadius: 12, textAlign: "center", marginBottom: 12 }}>
-        <button
-          style={{
-            background: themeColor,
-            color: "#fff",
-            border: "none",
-            borderRadius: selectedRadius,
-            padding: "8px 20px",
-            fontSize: 10.5,
-            fontWeight: 700,
-            cursor: "pointer",
-            boxShadow: `0 6px 18px ${themeColor}55`,
-            transition: "all 0.25s ease",
-          }}
-        >
-          Dynamic Component Token
-        </button>
-      </div>
-
-      {/* Token Selectors */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <span style={{ fontSize: 8.5, color: "#888" }}>COLOR:</span>
-          {["#7C3AED", "#2563EB", "#F97316", "#10B981"].map((c) => (
-            <button
-              key={c}
-              onClick={() => setThemeColor(c)}
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: "50%",
-                background: c,
-                border: themeColor === c ? "2px solid #fff" : "none",
-                cursor: "pointer",
-              }}
-            />
-          ))}
-        </div>
-
-        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-          <span style={{ fontSize: 8.5, color: "#888" }}>RADIUS:</span>
-          {[4, 12, 100].map((r) => (
-            <button
-              key={r}
-              onClick={() => setSelectedRadius(r)}
-              style={{
-                background: selectedRadius === r ? themeColor : "rgba(255,255,255,0.1)",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                padding: "2px 6px",
-                fontSize: 8.5,
-                cursor: "pointer",
-              }}
-            >
-              {r === 100 ? "pill" : `${r}px`}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 6. Interactive 3D Canvas Widget: WebGL Rotating Core
-function ThreeDWidget({ accent }: { accent: string }) {
-  const mountRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndX = useRef(0);
+  const touchEndY = useRef(0);
 
   useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount) return;
-
-    const width = mount.clientWidth || 280;
-    const height = 150;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.z = 4.2;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mount.appendChild(renderer.domElement);
-
-    // Geometry: Octahedron with wireframe
-    const geometry = new THREE.IcosahedronGeometry(1.3, 1);
-    const material = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(accent),
-      wireframe: true,
-      emissive: new THREE.Color(accent),
-      emissiveIntensity: 0.4,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // Inner glowing sphere
-    const innerGeom = new THREE.SphereGeometry(0.75, 16, 16);
-    const innerMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.35,
-    });
-    const innerMesh = new THREE.Mesh(innerGeom, innerMat);
-    scene.add(innerMesh);
-
-    // Ambient and Point light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
-    scene.add(ambientLight);
-    const pointLight = new THREE.PointLight(new THREE.Color(accent), 3, 10);
-    pointLight.position.set(2, 3, 4);
-    scene.add(pointLight);
-
-    let animId: number;
-    const animate = () => {
-      animId = requestAnimationFrame(animate);
-      mesh.rotation.x += 0.007;
-      mesh.rotation.y += 0.012;
-      innerMesh.rotation.x -= 0.005;
-      innerMesh.rotation.y -= 0.008;
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    return () => {
-      cancelAnimationFrame(animId);
-      if (mount && renderer.domElement) {
-        mount.removeChild(renderer.domElement);
-      }
-      geometry.dispose();
-      material.dispose();
-      innerGeom.dispose();
-      innerMat.dispose();
-      renderer.dispose();
-    };
-  }, [accent]);
-
-  return (
-    <div
-      style={{
-        background: "#081318",
-        borderRadius: 16,
-        padding: "14px 16px",
-        color: "#FAF9F6",
-        border: "1px solid rgba(6,182,212,0.3)",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.3)",
-        width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-        textAlign: "center",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9.5, color: accent, fontWeight: 700 }}>
-          WEBGL 3D SHADER ENGINE
-        </span>
-        <span style={{ fontSize: 9, color: "#888", fontFamily: "'JetBrains Mono', monospace" }}>60 FPS SHADER</span>
-      </div>
-
-      <div ref={mountRef} style={{ width: "100%", height: 150, display: "flex", alignItems: "center", justifyContent: "center" }} />
-
-      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#94A3B8", marginTop: 4 }}>
-        Interactive 3D Geometry · Smooth Inertial Motion
-      </div>
-    </div>
-  );
-}
-
-// 7. Full-Stack Systems Widget: Microservices Architecture Pipeline
-function FullStackWidget({ accent }: { accent: string }) {
-  return (
-    <div
-      style={{
-        background: "#0E1524",
-        borderRadius: 16,
-        padding: "16px 18px",
-        color: "#FAF9F6",
-        border: "1px solid rgba(59,130,246,0.3)",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.3)",
-        width: "100%",
-        maxWidth: 420,
-        margin: "0 auto",
-        fontFamily: "'JetBrains Mono', monospace",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <span style={{ fontSize: 9.5, color: accent, fontWeight: 700 }}>ARCHITECTURE // DISTRIBUTED</span>
-        <span style={{ fontSize: 8.5, color: "#10B981" }}>● 99.99% HEALTH</span>
-      </div>
-
-      {/* Nodes visualizer */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 4px", position: "relative" }}>
-        <div style={{ textAlign: "center", zIndex: 2 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, border: "1px solid rgba(255,255,255,0.15)" }}>
-            🌐
-          </div>
-          <div style={{ fontSize: 8, marginTop: 4, color: "#94A3B8" }}>Edge CDN</div>
-        </div>
-
-        <div style={{ height: 2, flex: 1, background: `linear-gradient(90deg, ${accent}, #10B981)`, position: "relative", margin: "0 6px" }}>
-          <span style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: "#fff", animation: "pulse-dot 1.4s infinite" }} />
-        </div>
-
-        <div style={{ textAlign: "center", zIndex: 2 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: `${accent}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, border: `1px solid ${accent}` }}>
-            ⚙️
-          </div>
-          <div style={{ fontSize: 8, marginTop: 4, color: "#94A3B8" }}>API Gateway</div>
-        </div>
-
-        <div style={{ height: 2, flex: 1, background: `linear-gradient(90deg, #10B981, ${accent})`, position: "relative", margin: "0 6px" }}>
-          <span style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: "#fff", animation: "pulse-dot 1.4s infinite" }} />
-        </div>
-
-        <div style={{ textAlign: "center", zIndex: 2 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, border: "1px solid rgba(255,255,255,0.15)" }}>
-            🗄️
-          </div>
-          <div style={{ fontSize: 8, marginTop: 4, color: "#94A3B8" }}>Postgres/Redis</div>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: 8.5, color: "#94A3B8" }}>
-        <span>Throughput: 85k req/sec</span>
-        <span style={{ color: "#10B981", fontWeight: 700 }}>Auto-healing Active</span>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
-   MAIN COMPONENT: REDESIGNED ATTRACTIVE SERVICES SHOWCASE
-   ───────────────────────────────────────────────────────────── */
-export default function Services({ onOpenContact }: ServicesProps) {
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [viewMode, setViewMode] = useState<"showcase" | "grid">("showcase");
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-
-  const active = SERVICE_DETAILS[activeIdx] || SERVICE_DETAILS[0];
-
-  const go = useCallback((dir: 1 | -1) => {
-    setActiveIdx((prev) => {
-      const next = prev + dir;
-      if (next < 0) return SERVICE_DETAILS.length - 1;
-      if (next >= SERVICE_DETAILS.length) return 0;
-      return next;
-    });
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isMobile = windowWidth < 768;
+  const currentSlots = isMobile ? MOBILE_SLOTS : DESKTOP_SLOTS;
+
+  // Responsive stage scaling
+  const desktopScale = Math.min(1, Math.max(0.6, (windowWidth - 32) / 1180));
+  const mobileScale = Math.min(1, Math.max(0.75, (windowWidth - 20) / 390));
+  const currentScale = isMobile ? mobileScale : desktopScale;
+
+  const stageBaseW = isMobile ? 390 : 1180;
+  const stageBaseH = isMobile ? 520 : 560;
+
+  // Desktop Mouse Parallax
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setMouseOffset({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setMouseOffset({ x: 0, y: 0 });
+  };
+
+  // Mobile Touch Swipe: swipe left/right to zoom next/prev card to center
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
   };
+
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
   };
+
   const handleTouchEnd = () => {
     const diffX = touchStartX.current - touchEndX.current;
-    if (Math.abs(diffX) > 40) {
-      go(diffX > 0 ? 1 : -1);
+    const diffY = touchStartY.current - touchEndY.current;
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+      if (diffX > 0) {
+        setActiveId((prev) => (prev + 1) % SERVICE_CARDS.length);
+      } else {
+        setActiveId((prev) => (prev - 1 + SERVICE_CARDS.length) % SERVICE_CARDS.length);
+      }
     }
   };
 
-  const renderWidget = (id: number, accent: string) => {
-    switch (id) {
-      case 0:
-        return <WebAppWidget accent={accent} />;
-      case 1:
-        return <MobileAppWidget accent={accent} />;
-      case 2:
-        return <AIProductWidget accent={accent} />;
-      case 3:
-        return <EcomWidget accent={accent} />;
-      case 4:
-        return <DesignSystemWidget accent={accent} />;
-      case 5:
-        return <ThreeDWidget accent={accent} />;
-      case 6:
-        return <FullStackWidget accent={accent} />;
-      default:
-        return <WebAppWidget accent={accent} />;
-    }
-  };
+  const activeService = SERVICE_CARDS[activeId];
 
   return (
     <section
       id="services"
       style={{
-        background: "#FAF9F6",
-        padding: "54px 0 68px",
+        background: "#FFFFFF",
+        padding: isMobile ? "40px 0 52px" : "52px 0 68px",
         position: "relative",
         overflow: "hidden",
-        borderTop: "1px solid rgba(20,20,20,0.06)",
-        borderBottom: "1px solid rgba(20,20,20,0.06)",
+        borderTop: "1px solid rgba(20, 20, 20, 0.06)",
       }}
     >
-      {/* Editorial ambient light glows */}
+      {/* Editorial warm ambient glows */}
       <div
         aria-hidden
         style={{
           position: "absolute",
-          top: "10%",
-          left: "5%",
-          width: 480,
-          height: 480,
+          top: "12%",
+          left: "8%",
+          width: isMobile ? 220 : 450,
+          height: isMobile ? 220 : 450,
           borderRadius: "50%",
-          background: `radial-gradient(circle, ${active.accent}12 0%, transparent 65%)`,
-          filter: "blur(80px)",
+          background: `radial-gradient(circle, ${activeService.accent}14 0%, transparent 70%)`,
+          filter: "blur(65px)",
+          transition: "background 0.6s ease",
           pointerEvents: "none",
-          transition: "background 0.5s ease",
         }}
       />
       <div
@@ -824,541 +223,599 @@ export default function Services({ onOpenContact }: ServicesProps) {
         style={{
           position: "absolute",
           bottom: "10%",
-          right: "5%",
-          width: 440,
-          height: 440,
+          right: "8%",
+          width: isMobile ? 240 : 480,
+          height: isMobile ? 240 : 480,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 65%)",
-          filter: "blur(80px)",
+          background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)",
+          filter: "blur(75px)",
           pointerEvents: "none",
         }}
       />
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 5vw", position: "relative", zIndex: 2 }}>
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 5vw", position: "relative", zIndex: 2 }}>
         {/* Section Header */}
         <div
           style={{
             display: "flex",
             alignItems: "flex-end",
             justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 16,
             marginBottom: 20,
+            flexWrap: "wrap",
+            gap: 14,
           }}
         >
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ width: 22, height: 1.5, background: active.accent }} />
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 6,
+              }}
+            >
+              <span
+                style={{
+                  display: "block",
+                  width: 24,
+                  height: 1.5,
+                  background: "linear-gradient(90deg, transparent, #F97316)",
+                }}
+              />
               <span
                 style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 10.5,
-                  letterSpacing: "0.22em",
-                  color: active.accent,
-                  fontWeight: 700,
+                  letterSpacing: "0.25em",
+                  color: "#F97316",
+                  fontWeight: 600,
                   textTransform: "uppercase",
                 }}
               >
-                08 // SERVICES &amp; CAPABILITIES
+                08 // SERVICES
               </span>
+              <span
+                style={{
+                  display: "block",
+                  width: 24,
+                  height: 1.5,
+                  background: "linear-gradient(90deg, #F97316, transparent)",
+                }}
+              />
             </div>
+
             <h2
               style={{
                 fontFamily: "'Instrument Sans', sans-serif",
-                fontWeight: 800,
-                fontSize: "clamp(30px, 4.4vw, 52px)",
+                fontWeight: 700,
+                fontSize: "clamp(28px, 4.2vw, 52px)",
                 letterSpacing: "-0.04em",
-                lineHeight: 1.05,
+                lineHeight: 1.02,
                 color: "#141414",
                 margin: 0,
               }}
             >
               WHAT I CAN BUILD FOR YOU.
             </h2>
-            <p
-              style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontStyle: "italic",
-                fontSize: "clamp(15px, 1.8vw, 20px)",
-                color: "#666",
-                margin: "4px 0 0",
-              }}
-            >
-              Transforming complex engineering challenges into high-converting digital products.
-            </p>
           </div>
 
-          {/* Mode Switcher (Showcase vs Grid) */}
+          {/* View toggle pills */}
           <div
             style={{
-              display: "inline-flex",
-              background: "rgba(20, 20, 20, 0.05)",
+              display: "flex",
+              background: "#FAF9F6",
               borderRadius: 100,
-              padding: 3,
-              border: "1px solid rgba(20, 20, 20, 0.08)",
+              padding: "3px",
+              border: "1px solid rgba(20,20,20,0.08)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
             }}
           >
             <button
-              onClick={() => setViewMode("showcase")}
+              onClick={() => setViewMode("stage")}
               style={{
                 border: "none",
                 borderRadius: 100,
-                padding: "6px 14px",
+                padding: "5px 13px",
                 fontSize: 10,
                 fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
+                letterSpacing: "0.1em",
+                fontWeight: 600,
                 cursor: "pointer",
-                background: viewMode === "showcase" ? "#141414" : "transparent",
-                color: viewMode === "showcase" ? "#FAF9F6" : "#666",
+                background: viewMode === "stage" ? "#141414" : "transparent",
+                color: viewMode === "stage" ? "#FAF9F6" : "#666666",
                 transition: "all 0.2s ease",
               }}
             >
-              INTERACTIVE SHOWCASE
+              3D STAGE
             </button>
             <button
-              onClick={() => setViewMode("grid")}
+              onClick={() => setViewMode("list")}
               style={{
                 border: "none",
                 borderRadius: 100,
-                padding: "6px 14px",
+                padding: "5px 13px",
                 fontSize: 10,
                 fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
+                letterSpacing: "0.1em",
+                fontWeight: 600,
                 cursor: "pointer",
-                background: viewMode === "grid" ? "#141414" : "transparent",
-                color: viewMode === "grid" ? "#FAF9F6" : "#666",
+                background: viewMode === "list" ? "#141414" : "transparent",
+                color: viewMode === "list" ? "#FAF9F6" : "#666666",
                 transition: "all 0.2s ease",
               }}
             >
-              ALL SERVICES GRID
+              SERVICES LIST
             </button>
           </div>
         </div>
 
-        {/* ─── HORIZONTAL CATEGORY SELECTOR STRIP (CLEAN & TOUCH-FRIENDLY) ─── */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            overflowX: "auto",
-            paddingBottom: 12,
-            marginBottom: 16,
-            scrollbarWidth: "none",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          {SERVICE_DETAILS.map((s, idx) => {
-            const isCurrent = idx === activeIdx;
-            return (
-              <button
-                key={s.number}
-                onClick={() => {
-                  setActiveIdx(idx);
-                  if (viewMode !== "showcase") setViewMode("showcase");
-                }}
-                style={{
-                  flexShrink: 0,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "7px 14px",
-                  borderRadius: 100,
-                  background: isCurrent ? s.accent : "#FFFFFF",
-                  color: isCurrent ? "#FFFFFF" : "#444444",
-                  border: isCurrent ? `1px solid ${s.accent}` : "1px solid rgba(20,20,20,0.08)",
-                  boxShadow: isCurrent ? `0 4px 14px ${s.accent}40` : "0 2px 6px rgba(0,0,0,0.02)",
-                  cursor: "pointer",
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 10.5,
-                  fontWeight: isCurrent ? 700 : 500,
-                  transition: "all 0.25s ease",
-                }}
-              >
-                <span style={{ opacity: isCurrent ? 0.9 : 0.5 }}>{s.number}</span>
-                <span>{s.title}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ─── VIEW 1: INTERACTIVE SHOWCASE DECK (HERO CARD WITH LIVE WIDGET) ─── */}
-        {viewMode === "showcase" ? (
+        {/* Interactive Quick-Selector Pills */}
+        {viewMode === "stage" && (
           <div
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
             style={{
-              touchAction: "pan-y",
-              position: "relative",
+              display: "flex",
+              gap: 8,
+              overflowX: "auto",
+              paddingBottom: 10,
+              marginBottom: 14,
+              scrollbarWidth: "none",
+              WebkitOverflowScrolling: "touch",
             }}
           >
+            {SERVICE_CARDS.map((srv) => {
+              const isActive = activeId === srv.id;
+              return (
+                <button
+                  key={srv.id}
+                  onClick={() => setActiveId(srv.id)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: isMobile ? "5px 12px" : "6px 14px",
+                    borderRadius: 100,
+                    fontSize: isMobile ? 9.5 : 10,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
+                    border: isActive ? `1.5px solid ${srv.accent}` : "1px solid rgba(20,20,20,0.08)",
+                    background: isActive ? srv.accent : "#FAF9F6",
+                    color: isActive ? "#FFFFFF" : "#555555",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    boxShadow: isActive ? `0 4px 14px ${srv.accent}44` : "none",
+                    transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                    outline: "none",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span style={{ opacity: isActive ? 1 : 0.6 }}>0{srv.id + 1}</span>
+                  <span>{srv.title}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Interactive Hint Pill */}
+        {viewMode === "stage" && (
+          <div style={{ textAlign: "center", marginBottom: 14 }}>
             <div
               style={{
-                background: "#FFFFFF",
-                borderRadius: 22,
-                border: "1px solid rgba(20, 20, 20, 0.08)",
-                boxShadow: "0 18px 50px -15px rgba(0,0,0,0.06), 0 4px 16px -2px rgba(0,0,0,0.02)",
-                padding: "clamp(18px, 3.2vw, 32px)",
-                display: "grid",
-                gridTemplateColumns: "1fr",
-                gap: 24,
+                display: "inline-flex",
                 alignItems: "center",
-                transition: "all 0.35s ease",
+                gap: 7,
+                background: "#FAF9F6",
+                border: "1px solid rgba(20, 20, 20, 0.08)",
+                padding: isMobile ? "5px 14px" : "6px 18px",
+                borderRadius: 100,
+                fontSize: isMobile ? 10 : 11,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 500,
+                color: "#2563EB",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
               }}
-              className="lg:grid-cols-[1.1fr_1fr]"
             >
-              {/* Left Column: Editorial Service Narrative */}
+              <span>✨</span>
+              <span>
+                {isMobile
+                  ? "Kisi bhi card par tap karein — wo darmayan mein zoom ho jaye ga"
+                  : "Click any service card to zoom it into the center"}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ── VIEW 1: 3D ZOOM-TO-CENTER STAGE (DESKTOP + MOBILE) ── */}
+        {viewMode === "stage" ? (
+          <div>
+            <div
+              ref={containerRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{
+                position: "relative",
+                width: "100%",
+                height: `${stageBaseH * currentScale}px`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                touchAction: "pan-y",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: `${stageBaseW}px`,
+                  height: `${stageBaseH}px`,
+                  perspective: isMobile ? "1050px" : "1350px",
+                  perspectiveOrigin: "50% 45%",
+                  transform: isMobile
+                    ? `scale(${mobileScale})`
+                    : `rotateX(${mouseOffset.y * -6}deg) rotateY(${mouseOffset.x * 7}deg) scale(${desktopScale})`,
+                  transformOrigin: "center center",
+                  transition: isMobile ? "none" : "transform 0.25s ease-out",
+                  flexShrink: 0,
+                }}
+              >
+                {SERVICE_CARDS.map((srv) => {
+                  // The active card is ALWAYS mapped to slot 0 (Dead Center / Zoomed in darmayan)!
+                  const slotIdx = (srv.id - activeId + SERVICE_CARDS.length) % SERVICE_CARDS.length;
+                  const slot = currentSlots[slotIdx];
+                  const isCenter = slotIdx === 0;
+
+                  return (
+                    <div
+                      key={srv.id}
+                      onClick={() => setActiveId(srv.id)}
+                      style={{
+                        position: "absolute",
+                        top: slot.top,
+                        left: slot.left,
+                        width: `${slot.width}px`,
+                        height: `${slot.height}px`,
+                        transform: `translate(-50%, -50%) perspective(1200px) rotateX(${slot.rx}deg) rotateY(${slot.ry}deg) rotateZ(${slot.rz}deg) translateZ(${slot.translateZ}px) scale(${slot.scale})`,
+                        zIndex: isCenter ? 50 : slot.zIndex,
+                        borderRadius: isMobile ? (isCenter ? "20px" : "16px") : (isCenter ? "24px" : "18px"),
+                        overflow: "hidden",
+                        cursor: isCenter ? "default" : "pointer",
+                        background: "#141414",
+                        boxShadow: isCenter
+                          ? `0 32px 80px -12px rgba(20,20,40,0.35), 0 12px 30px -6px ${srv.accent}44, 0 0 0 2.5px ${srv.accent}`
+                          : `0 10px 28px -8px rgba(0,0,0,0.12), 0 0 0 1px rgba(20,20,20,0.08)`,
+                        opacity: isCenter ? 1 : 0.72,
+                        transition:
+                          "top 0.65s cubic-bezier(0.16, 1, 0.3, 1), left 0.65s cubic-bezier(0.16, 1, 0.3, 1), width 0.65s cubic-bezier(0.16, 1, 0.3, 1), height 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease, opacity 0.45s ease",
+                        touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
+                      }}
+                      title={isCenter ? srv.title : `Tap to zoom ${srv.title} to center`}
+                    >
+                      <div
+                        className={`w-full h-full relative ${slot.floatClass}`}
+                        style={{
+                          animationDelay: slot.floatDelay,
+                          borderRadius: "inherit",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {/* Tap indicator on surrounding cards */}
+                        {!isCenter && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: isMobile ? 6 : 8,
+                              right: isMobile ? 6 : 8,
+                              zIndex: 6,
+                              background: "rgba(0,0,0,0.55)",
+                              backdropFilter: "blur(4px)",
+                              color: "#ffffff",
+                              borderRadius: "50%",
+                              width: isMobile ? 18 : 22,
+                              height: isMobile ? 18 : 22,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: isMobile ? 9 : 11,
+                              pointerEvents: "none",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                            }}
+                          >
+                            ↗
+                          </div>
+                        )}
+
+                        {/* Photo */}
+                        <img
+                        src={srv.image}
+                        alt={srv.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                          filter: isCenter
+                            ? "brightness(0.92) saturate(1.08)"
+                            : "brightness(0.48) saturate(0.8)",
+                          transition: "filter 0.5s ease",
+                        }}
+                      />
+
+                      {/* Top subtle glass reflection */}
+                      <div
+                        aria-hidden
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: "35%",
+                          background: "linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, transparent 100%)",
+                          borderRadius: isCenter ? "20px 20px 0 0" : "16px 16px 0 0",
+                          pointerEvents: "none",
+                          zIndex: 2,
+                        }}
+                      />
+
+                      {/* Top ambient glowing bar on zoomed center card */}
+                      {isCenter && (
+                        <div
+                          aria-hidden
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: "8%",
+                            right: "8%",
+                            height: "3px",
+                            background: `linear-gradient(90deg, transparent, ${srv.accent} 35%, #FFFFFF 65%, transparent)`,
+                            zIndex: 5,
+                            pointerEvents: "none",
+                          }}
+                        />
+                      )}
+
+                      {/* Card bottom caption */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background:
+                            "linear-gradient(to top, rgba(12, 16, 24, 0.96) 0%, rgba(12, 16, 24, 0.84) 55%, rgba(12, 16, 24, 0.15) 85%, transparent 100%)",
+                          padding: isCenter
+                            ? isMobile
+                              ? "18px 16px 14px"
+                              : "26px 22px 18px"
+                            : isMobile
+                            ? "10px 10px 8px"
+                            : "14px 14px 12px",
+                          zIndex: 3,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "flex-end",
+                          transition: "padding 0.5s ease",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                          <span
+                            style={{
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: isCenter ? (isMobile ? 10 : 10.5) : 8,
+                              color: srv.accent,
+                              fontWeight: 700,
+                            }}
+                          >
+                            0{srv.id + 1}
+                          </span>
+                          <span style={{ width: 8, height: 1, background: "rgba(255,255,255,0.35)" }} />
+                          <span
+                            style={{
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: isCenter ? (isMobile ? 9 : 9.5) : 7.5,
+                              letterSpacing: "0.14em",
+                              color: "rgba(255,255,255,0.75)",
+                            }}
+                          >
+                            {srv.category}
+                          </span>
+                        </div>
+
+                        <h3
+                          style={{
+                            fontFamily: "'Instrument Sans', sans-serif",
+                            fontWeight: 700,
+                            fontSize: isCenter ? (isMobile ? 18 : 22) : isMobile ? 10.5 : 14,
+                            color: "#FFFFFF",
+                            margin: "0 0 3px",
+                            lineHeight: 1.15,
+                            whiteSpace: isCenter ? "normal" : "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            transition: "font-size 0.5s ease",
+                          }}
+                        >
+                          {srv.title}
+                        </h3>
+
+                        {isCenter && (
+                          <p
+                            style={{
+                              fontFamily: "'Instrument Sans', sans-serif",
+                              fontSize: isMobile ? 11.5 : 13,
+                              color: "rgba(255,255,255,0.76)",
+                              margin: isMobile ? "0 0 8px" : "0 0 10px",
+                              lineHeight: 1.35,
+                              maxWidth: 360,
+                            }}
+                          >
+                            {srv.desc}
+                          </p>
+                        )}
+
+                        {isCenter && (
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            {srv.tags.map((t) => (
+                              <span
+                                key={t}
+                                style={{
+                                  fontFamily: "'JetBrains Mono', monospace",
+                                  fontSize: isMobile ? 8.5 : 9,
+                                  padding: isMobile ? "2px 7px" : "2px 7px",
+                                  borderRadius: 4,
+                                  background: "rgba(255,255,255,0.12)",
+                                  border: "1px solid rgba(255,255,255,0.2)",
+                                  color: "#FFFFFF",
+                                }}
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+                })}
+              </div>
+            </div>
+
+            {/* Spotlight Details Card below */}
+            <div
+              style={{
+                marginTop: 16,
+                background: "#FAF9F6",
+                border: "1px solid rgba(20, 20, 20, 0.08)",
+                borderRadius: 18,
+                padding: isMobile ? "18px 20px" : "22px 26px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 14,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+              }}
+            >
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 9.5,
+                    color: activeService.accent,
+                    letterSpacing: "0.2em",
+                    marginBottom: 4,
+                    fontWeight: 700,
+                  }}
+                >
+                  0{activeService.id + 1} // {activeService.category}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'Instrument Sans', sans-serif",
+                    fontWeight: 700,
+                    fontSize: isMobile ? 19 : "clamp(20px, 2.5vw, 24px)",
+                    color: "#141414",
+                    marginBottom: 4,
+                  }}
+                >
+                  {activeService.title}
+                </div>
+                <div style={{ fontFamily: "'Instrument Sans', sans-serif", fontSize: isMobile ? 13 : 14, color: "#666666", maxWidth: 580 }}>
+                  {activeService.desc}
+                </div>
+              </div>
+
+              {onOpenContact && (
+                <button
+                  onClick={onOpenContact}
+                  className="btn-primary"
+                  style={{
+                    background: activeService.accent,
+                    color: "#FFFFFF",
+                    borderRadius: 100,
+                    padding: isMobile ? "9px 20px" : "11px 24px",
+                    fontSize: isMobile ? 10 : 11,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+                >
+                  DISCUSS THIS SERVICE →
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ── VIEW 2: SERVICES LIST (Clean Editorial View) ── */
+          <div>
+            {SERVICES.map((s, i) => (
+              <div
+                key={s.title}
+                style={{
+                  borderTop: "1px solid rgba(20,20,20,0.08)",
+                  padding: "16px 0",
+                  display: "grid",
+                  gridTemplateColumns: "36px 1fr auto",
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10.5,
+                    color: SERVICE_CARDS[i % SERVICE_CARDS.length].accent,
+                    fontWeight: 700,
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <span
+                    style={{
+                      fontFamily: "'Instrument Sans', sans-serif",
+                      fontWeight: 700,
+                      fontSize: "clamp(16px, 2vw, 22px)",
+                      color: "#141414",
+                      display: "block",
+                      marginBottom: 2,
+                    }}
+                  >
+                    {s.title}
+                  </span>
                   <span
                     style={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 9.5,
-                      fontWeight: 700,
-                      color: active.accent,
-                      background: `${active.accent}14`,
-                      border: `1px solid ${active.accent}30`,
-                      padding: "3px 9px",
-                      borderRadius: 100,
-                    }}
-                  >
-                    {active.number} // {active.category}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 9,
-                      color: "#666",
-                      background: "rgba(20,20,20,0.04)",
-                      padding: "3px 9px",
-                      borderRadius: 100,
-                    }}
-                  >
-                    TIMELINE: {active.timeline}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 9,
-                      color: "#10B981",
-                      background: "rgba(16,185,129,0.1)",
-                      padding: "3px 9px",
-                      borderRadius: 100,
-                      fontWeight: 600,
-                    }}
-                  >
-                    ● PRODUCTION READY
-                  </span>
-                </div>
-
-                <h3
-                  style={{
-                    fontFamily: "'Instrument Sans', sans-serif",
-                    fontWeight: 800,
-                    fontSize: "clamp(22px, 3vw, 34px)",
-                    color: "#141414",
-                    letterSpacing: "-0.03em",
-                    lineHeight: 1.1,
-                    margin: "0 0 8px",
-                  }}
-                >
-                  {active.title}
-                </h3>
-
-                <p
-                  style={{
-                    fontFamily: "'Instrument Sans', sans-serif",
-                    fontSize: "clamp(13px, 1.3vw, 15px)",
-                    lineHeight: 1.5,
-                    color: "#555",
-                    margin: "0 0 16px",
-                  }}
-                >
-                  {active.subtitle}
-                </p>
-
-                {/* Key Deliverables Bullet Points */}
-                <div style={{ marginBottom: 18 }}>
-                  <div
-                    style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 9,
-                      letterSpacing: "0.15em",
                       color: "#888",
-                      marginBottom: 7,
-                      fontWeight: 600,
                     }}
                   >
-                    WHAT YOU GET // DELIVERABLES
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {active.deliverables.map((item) => (
-                      <div
-                        key={item}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          fontSize: 12,
-                          color: "#222",
-                          fontFamily: "'Instrument Sans', sans-serif",
-                        }}
-                      >
-                        <span style={{ color: active.accent, fontWeight: 800, fontSize: 13 }}>✓</span>
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
+                    {SERVICE_CARDS[i % SERVICE_CARDS.length].category}
+                  </span>
                 </div>
-
-                {/* Tech Badges */}
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 20 }}>
-                  {active.techStack.map((tech) => (
-                    <span
-                      key={tech}
-                      style={{
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 9.5,
-                        padding: "2.5px 8px",
-                        borderRadius: 5,
-                        background: "#FAF9F6",
-                        border: "1px solid rgba(20,20,20,0.08)",
-                        color: "#444",
-                      }}
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Call to Action Buttons */}
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                  <button
-                    onClick={onOpenContact}
-                    style={{
-                      background: "#141414",
-                      color: "#FAF9F6",
-                      border: "none",
-                      borderRadius: 100,
-                      padding: "9px 20px",
-                      fontFamily: "'Instrument Sans', sans-serif",
-                      fontSize: 10.5,
-                      letterSpacing: "0.08em",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      boxShadow: "0 6px 18px rgba(20,20,20,0.12)",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = active.accent)}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "#141414")}
-                  >
-                    <span>DISCUSS {active.title}</span>
-                    <span>→</span>
-                  </button>
-
-                  <button
-                    onClick={() => go(1)}
-                    style={{
-                      background: "transparent",
-                      color: "#666",
-                      border: "1px solid rgba(20,20,20,0.12)",
-                      borderRadius: 100,
-                      padding: "9px 16px",
-                      fontFamily: "'Instrument Sans', sans-serif",
-                      fontSize: 10.5,
-                      letterSpacing: "0.05em",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 5,
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "#141414";
-                      e.currentTarget.style.borderColor = "#141414";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "#666";
-                      e.currentTarget.style.borderColor = "rgba(20,20,20,0.12)";
-                    }}
-                  >
-                    <span>NEXT</span>
-                    <span>→</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Right Column: Bespoke Interactive Micro-Experience */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "4px",
-                }}
-              >
-                {renderWidget(active.id, active.accent)}
-              </div>
-            </div>
-
-            {/* Bottom Navigation & Indicator Controls */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginTop: 16,
-                padding: "0 6px",
-                flexWrap: "wrap",
-                gap: 12,
-              }}
-            >
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, color: "#888", letterSpacing: "0.15em" }}>
-                0{activeIdx + 1} / 0{SERVICE_DETAILS.length} · {active.category}
-              </div>
-
-              {/* Dots Progress */}
-              <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                {SERVICE_DETAILS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveIdx(i)}
-                    aria-label={`Jump to service 0${i + 1}`}
-                    style={{
-                      width: i === activeIdx ? 22 : 6,
-                      height: 5,
-                      borderRadius: 100,
-                      background: i === activeIdx ? active.accent : "rgba(20,20,20,0.15)",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Arrow Steppers */}
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  onClick={() => go(-1)}
-                  aria-label="Previous capability"
+                <span
                   style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "50%",
-                    background: "#FFFFFF",
-                    border: "1px solid rgba(20, 20, 20, 0.1)",
-                    color: "#141414",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                    fontSize: 12,
-                    transition: "all 0.2s ease",
+                    fontFamily: "'Instrument Sans', sans-serif",
+                    fontSize: 13.5,
+                    color: "#666",
+                    maxWidth: 320,
+                    textAlign: "right",
                   }}
                 >
-                  ←
-                </button>
-                <button
-                  onClick={() => go(1)}
-                  aria-label="Next capability"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "50%",
-                    background: "#FFFFFF",
-                    border: "1px solid rgba(20, 20, 20, 0.1)",
-                    color: "#141414",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                    fontSize: 12,
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  →
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* ─── VIEW 2: ALL CAPABILITIES BENTO GRID ─── */
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 340px), 1fr))",
-              gap: 16,
-            }}
-          >
-            {SERVICE_DETAILS.map((s, idx) => (
-              <div
-                key={s.number}
-                onClick={() => {
-                  setActiveIdx(idx);
-                  setViewMode("showcase");
-                }}
-                style={{
-                  background: "#FFFFFF",
-                  borderRadius: 18,
-                  border: "1px solid rgba(20, 20, 20, 0.08)",
-                  padding: "20px 20px",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.02)",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                }}
-                className="hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9.5, fontWeight: 700, color: s.accent, background: `${s.accent}14`, padding: "2px 8px", borderRadius: 100 }}>
-                      {s.number} // {s.category}
-                    </span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8.5, color: "#888" }}>
-                      {s.timeline}
-                    </span>
-                  </div>
-
-                  <h3 style={{ fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700, fontSize: 18, color: "#141414", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-                    {s.title}
-                  </h3>
-                  <p style={{ fontFamily: "'Instrument Sans', sans-serif", fontSize: 12.5, color: "#666", lineHeight: 1.45, margin: "0 0 14px" }}>
-                    {s.subtitle}
-                  </p>
-                </div>
-
-                <div>
-                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
-                    {s.techStack.slice(0, 3).map((t) => (
-                      <span key={t} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8.5, padding: "2px 6px", borderRadius: 4, background: "#FAF9F6", border: "1px solid rgba(20,20,20,0.06)", color: "#555" }}>
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid rgba(20,20,20,0.06)" }}>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: s.accent, fontWeight: 700 }}>
-                      {s.metrics.label}: {s.metrics.value}
-                    </span>
-                    <span style={{ fontSize: 11, color: "#141414", fontWeight: 700 }}>
-                      EXPLORE →
-                    </span>
-                  </div>
-                </div>
+                  {s.desc}
+                </span>
               </div>
             ))}
+            <div style={{ borderTop: "1px solid rgba(20,20,20,0.08)" }} />
           </div>
         )}
       </div>

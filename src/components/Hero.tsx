@@ -1,4 +1,4 @@
-import WaterAquarium3D from "./WaterAquarium3D";
+import Tech3DNetwork from "./Tech3DNetwork";
 import { PERSONAL_INFO } from "../data/portfolioData";
 
 interface HeroProps {
@@ -134,7 +134,7 @@ export default function Hero({ onOpenPage }: HeroProps) {
           </div>
         </div>
 
-        {/* Right: 3D Interactive Water Aquarium */}
+        {/* Right: 3D Interactive Tech Network (Attached 3D Model) */}
         <div
           style={{
             position: "relative",
@@ -145,7 +145,7 @@ export default function Hero({ onOpenPage }: HeroProps) {
             justifyContent: "center",
           }}
         >
-          <WaterAquarium3D />
+          <Tech3DNetwork coreLabel="AR" accentColor="#2563EB" />
         </div>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Tech3DNetwork from "./Tech3DNetwork";
 import { PERSONAL_INFO } from "../data/portfolioData";
 
@@ -6,12 +7,25 @@ interface HeroProps {
 }
 
 export default function Hero({ onOpenPage }: HeroProps) {
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isDesktop = windowWidth >= 1024;
+  const isMobile = windowWidth < 640;
+
   return (
     <section
       id="hero"
       style={{
         background: "#FAF9F6",
-        padding: "68px 5vw 28px",
+        padding: isMobile ? "98px 5vw 24px" : isDesktop ? "82px 5vw 32px" : "94px 5vw 28px",
         position: "relative",
         overflow: "hidden",
       }}
@@ -21,14 +35,28 @@ export default function Hero({ onOpenPage }: HeroProps) {
           maxWidth: 1240,
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "1fr",
-          gap: 28,
+          gridTemplateColumns: isDesktop ? "1.1fr 1fr" : "1fr",
+          gap: isDesktop ? 28 : 20,
+          alignItems: "center",
         }}
-        className="lg:grid-cols-[1.1fr_1fr]"
       >
         {/* Left: Typography */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <img
+              src="/profile.jpg"
+              alt="Asad Ur Rehman"
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                objectFit: "cover",
+                objectPosition: "center top",
+                border: "2px solid #2563EB",
+                boxShadow: "0 2px 8px rgba(37, 99, 235, 0.25)",
+                flexShrink: 0,
+              }}
+            />
             <span
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
@@ -139,14 +167,16 @@ export default function Hero({ onOpenPage }: HeroProps) {
         <div
           style={{
             position: "relative",
-            minHeight: 460,
-            height: "100%",
+            width: "100%",
+            minHeight: isMobile ? 320 : 460,
+            height: isMobile ? 340 : 480,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            marginTop: isDesktop ? 0 : 8,
           }}
         >
-          <Tech3DNetwork coreLabel="AR" accentColor="#2563EB" />
+          <Tech3DNetwork coreLabel="AR" accentColor="#2563EB" isMobile={isMobile} />
         </div>
       </div>
     </section>

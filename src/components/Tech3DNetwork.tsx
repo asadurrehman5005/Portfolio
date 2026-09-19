@@ -6,6 +6,7 @@ export interface Tech3DNetworkProps {
   accentColor?: string;
   onNodeClick?: (label: string) => void;
   className?: string;
+  isMobile?: boolean;
 }
 
 interface NodeData {
@@ -35,6 +36,7 @@ export default function Tech3DNetwork({
   coreLabel = "EVR",
   accentColor = "#2563EB",
   onNodeClick,
+  isMobile,
 }: Tech3DNetworkProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -52,14 +54,27 @@ export default function Tech3DNetwork({
     const canvas = canvasRef.current;
     if (!mount || !canvas) return;
 
-    // ─── Dimensions ───
-    let width = mount.clientWidth || 600;
-    let height = mount.clientHeight || 500;
+    // ─── Dimensions with accurate container inspection ───
+    const getContainerDims = () => {
+      const rect = mount.getBoundingClientRect();
+      const parentRect = mount.parentElement?.getBoundingClientRect();
+      const w = Math.round(
+        rect.width ||
+          mount.clientWidth ||
+          parentRect?.width ||
+          (typeof window !== "undefined" ? Math.min(window.innerWidth - 32, 580) : 580)
+      );
+      const h = Math.round(rect.height || mount.clientHeight || (w < 640 ? 340 : 480));
+      return { w: Math.max(w, 280), h: Math.max(h, 280) };
+    };
+
+    let { w: width, h: height } = getContainerDims();
+    const isNarrow = isMobile ?? width < 640;
 
     // ─── Scene & Camera ───
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    camera.position.set(0, 0, 7.2);
+    camera.position.set(0, 0, isNarrow ? 9.2 : 7.2);
 
     // ─── Renderer ───
     const renderer = new THREE.WebGLRenderer({
@@ -68,7 +83,7 @@ export default function Tech3DNetwork({
       alpha: true,
       powerPreference: "high-performance",
     });
-    renderer.setSize(width, height);
+    renderer.setSize(width, height, true);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     // ─── Lights ───
@@ -91,8 +106,9 @@ export default function Tech3DNetwork({
     pointLight2.position.set(2, 2, 1);
     scene.add(pointLight2);
 
-    // ─── Main Rotating Group ───
+    // ─── Main Rotating Group with Responsive Scaling ───
     const mainGroup = new THREE.Group();
+    mainGroup.scale.setScalar(isNarrow ? 0.72 : 1.0);
     scene.add(mainGroup);
 
     // ─── Nodes Generation (matching reference) ───
@@ -314,14 +330,22 @@ export default function Tech3DNetwork({
     };
 
     const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const isTouch = "touches" in e;
+      const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+      const clientY = isTouch ? e.touches[0].clientY : e.clientY;
 
       if (isDragging) {
         const deltaX = clientX - prevMouseX;
         const deltaY = clientY - prevMouseY;
-        targetRotationY += deltaX * 0.008;
-        targetRotationX += deltaY * 0.008;
+        if (isTouch) {
+          if (Math.abs(deltaX) > Math.abs(deltaY) * 0.7) {
+            targetRotationY += deltaX * 0.009;
+            targetRotationX += deltaY * 0.003;
+          }
+        } else {
+          targetRotationY += deltaX * 0.008;
+          targetRotationX += deltaY * 0.008;
+        }
         prevMouseX = clientX;
         prevMouseY = clientY;
       }
@@ -483,7 +507,7 @@ export default function Tech3DNetwork({
               color: n.labelColor || "#2563EB",
               x,
               y,
-              visible: isFront && x >= -40 && x <= width + 40 && y >= -20 && y <= height + 20,
+              visible: isFront && x >= 12 && x <= width - 12 && y >= 12 && y <= height - 12,
             };
           });
         setProjectedLabels(screenLabels);
@@ -504,20 +528,40 @@ export default function Tech3DNetwork({
 
     animate();
 
-    // ─── Resize Handler ───
-    const handleResize = () => {
-      if (!mount) return;
-      width = mount.clientWidth || 600;
-      height = mount.clientHeight || 500;
+    // ─── Auto-Resize with ResizeObserver & Window Resize ───
+    const updateDimensions = (newW: number, newH: number) => {
+      if (newW <= 0 || newH <= 0) return;
+      width = newW;
+      height = newH;
+      const narrow = isMobile ?? width < 640;
       camera.aspect = width / height;
+      camera.position.set(0, 0, narrow ? 9.2 : 7.2);
+      mainGroup.scale.setScalar(narrow ? 0.72 : 1.0);
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      renderer.setSize(width, height, true);
+    };
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const rw = entry.contentRect.width;
+        const rh = entry.contentRect.height;
+        if (rw > 0 && rh > 0) {
+          updateDimensions(Math.round(rw), Math.round(rh));
+        }
+      }
+    });
+    resizeObserver.observe(mount);
+
+    const handleResize = () => {
+      const { w, h } = getContainerDims();
+      updateDimensions(w, h);
     };
 
     window.addEventListener("resize", handleResize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
       window.removeEventListener("resize", handleResize);
       canvas.removeEventListener("mousedown", handlePointerDown);
       window.removeEventListener("mousemove", handlePointerMove);
@@ -527,7 +571,7 @@ export default function Tech3DNetwork({
       window.removeEventListener("touchend", handlePointerUp);
       renderer.dispose();
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div
@@ -536,10 +580,13 @@ export default function Tech3DNetwork({
         position: "relative",
         width: "100%",
         height: "100%",
-        minHeight: 460,
+        minHeight: isMobile ? 320 : 460,
         overflow: "hidden",
         userSelect: "none",
         touchAction: "pan-y",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <canvas
@@ -548,7 +595,9 @@ export default function Tech3DNetwork({
           display: "block",
           width: "100%",
           height: "100%",
+          maxWidth: "100%",
           cursor: "grab",
+          touchAction: "pan-y",
         }}
       />
 
@@ -568,7 +617,7 @@ export default function Tech3DNetwork({
             style={{
               fontFamily: "'DM Sans', 'Inter', sans-serif",
               fontWeight: 900,
-              fontSize: 26,
+              fontSize: isMobile ? 21 : 26,
               color: "#FFFFFF",
               letterSpacing: "0.08em",
               textShadow: `0 0 24px ${accentColor}, 0 0 8px rgba(255,255,255,0.9)`,
@@ -589,7 +638,7 @@ export default function Tech3DNetwork({
               style={{
                 position: "absolute",
                 left: `${lbl.x}px`,
-                top: `${lbl.y - 18}px`,
+                top: `${lbl.y - (isMobile ? 12 : 18)}px`,
                 transform: "translate(-50%, -50%)",
                 pointerEvents: onNodeClick ? "auto" : "none",
                 cursor: onNodeClick ? "pointer" : "default",
@@ -602,10 +651,10 @@ export default function Tech3DNetwork({
                   background: "rgba(255, 255, 255, 0.94)",
                   backdropFilter: "blur(8px)",
                   borderRadius: 6,
-                  padding: "4px 10px",
+                  padding: isMobile ? "3px 8px" : "4px 10px",
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  gap: isMobile ? 4 : 6,
                   boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.05)",
                   whiteSpace: "nowrap",
                   border: "1px solid rgba(20, 20, 20, 0.08)",
@@ -613,8 +662,8 @@ export default function Tech3DNetwork({
               >
                 <span
                   style={{
-                    width: 7,
-                    height: 7,
+                    width: isMobile ? 5 : 7,
+                    height: isMobile ? 5 : 7,
                     borderRadius: "50%",
                     background: lbl.color,
                     flexShrink: 0,
@@ -624,7 +673,7 @@ export default function Tech3DNetwork({
                   style={{
                     fontFamily: "'JetBrains Mono', 'DM Sans', sans-serif",
                     fontWeight: 700,
-                    fontSize: 10.5,
+                    fontSize: isMobile ? 9 : 10.5,
                     letterSpacing: "0.08em",
                     color: "#0F172A",
                   }}

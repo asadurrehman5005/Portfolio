@@ -182,7 +182,7 @@ export default function DynamicHeader({ activeView, onOpenPage }: DynamicHeaderP
           </div>
 
           {/* Center: Navigation pills */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 2 }} className="hidden md:flex">
+          <nav className="hidden md:flex items-center gap-[2px]">
             {NAV_ITEMS.map((item) => {
               const isCurrent = currentId === item.id;
               return (
@@ -232,7 +232,6 @@ export default function DynamicHeader({ activeView, onOpenPage }: DynamicHeaderP
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div
               style={{
-                display: "flex",
                 alignItems: "center",
                 gap: 5,
                 padding: "4px 10px",

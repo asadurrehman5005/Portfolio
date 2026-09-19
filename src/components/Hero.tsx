@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import HeroBlueprint3D from "./HeroBlueprint3D";
+import HeroBlueprintCanvas from "./HeroBlueprintCanvas";
 import { PERSONAL_INFO } from "../data/portfolioData";
 
 interface HeroProps {
@@ -25,19 +25,25 @@ export default function Hero({ onOpenPage }: HeroProps) {
       id="hero"
       style={{
         background: "#FAF9F6",
-        padding: isMobile ? "126px 5vw 24px" : isDesktop ? "86px 5vw 32px" : "112px 5vw 28px",
+        padding: isMobile ? "126px 5vw 36px" : isDesktop ? "96px 5vw 48px" : "116px 5vw 40px",
+        minHeight: isMobile ? "88vh" : "92vh",
+        display: "flex",
+        alignItems: "center",
         position: "relative",
         overflow: "hidden",
       }}
     >
+      {/* Full Background 3D Architectural Blueprint Canvas with Scroll Zoom */}
+      <HeroBlueprintCanvas />
 
       <div
         style={{
           maxWidth: 1240,
+          width: "100%",
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: isDesktop ? "1.1fr 1fr" : "1fr",
-          gap: isDesktop ? 28 : 20,
+          gridTemplateColumns: isDesktop ? "1.15fr 0.85fr" : "1fr",
+          gap: isDesktop ? 32 : 24,
           alignItems: "center",
           position: "relative",
           zIndex: 2,
@@ -236,21 +242,84 @@ export default function Hero({ onOpenPage }: HeroProps) {
           </div>
         </div>
 
-        {/* Right: 3D Architectural Blueprint Wireframe Model (TopSection Model) */}
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            minHeight: isMobile ? 360 : 490,
-            height: isMobile ? 380 : 490,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: isDesktop ? 0 : 12,
-          }}
-        >
-          <HeroBlueprint3D />
-        </div>
+        {/* Right: Floating HUD Badges over Full Background 3D Model */}
+        {isDesktop ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              height: 420,
+              pointerEvents: "none",
+              paddingRight: 10,
+            }}
+          >
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px",
+                borderRadius: "999px",
+                background: "rgba(255, 255, 255, 0.8)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(20, 20, 20, 0.08)",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.04)",
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#2563EB",
+                  boxShadow: "0 0 8px #2563EB",
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px",
+                  letterSpacing: "0.16em",
+                  color: "#141414",
+                  fontWeight: 700,
+                }}
+              >
+                3D ARCHITECTURAL WIREFRAME
+              </span>
+            </div>
+
+            {/* Bottom Scroll Dive Hint */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 16px",
+                borderRadius: 10,
+                background: "rgba(255, 255, 255, 0.75)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(20, 20, 20, 0.08)",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.03)",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px",
+                  letterSpacing: "0.14em",
+                  color: "#666",
+                  fontWeight: 600,
+                }}
+              >
+                SCROLL TO DIVE IN 3D ↓
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div style={{ height: 40 }} />
+        )}
       </div>
     </section>
   );

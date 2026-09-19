@@ -1,27 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-interface HeroBlueprint3DProps {
-  className?: string;
-}
-
-export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
+export default function HeroBlueprintCanvas() {
   const mountRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isInteracting, setIsInteracting] = useState(false);
 
   useEffect(() => {
     const mount = mountRef.current;
     const canvas = canvasRef.current;
     if (!mount || !canvas) return;
 
-    let width = mount.clientWidth || 500;
-    let height = mount.clientHeight || 460;
+    let width = mount.clientWidth || window.innerWidth;
+    let height = mount.clientHeight || window.innerHeight;
 
     // ─── Scene & Camera ───
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 8.2);
+    const baseCameraZ = 7.8;
+    camera.position.set(0, 0, baseCameraZ);
 
     // ─── WebGL Renderer ───
     const renderer = new THREE.WebGLRenderer({
@@ -33,31 +29,47 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
     renderer.setSize(width, height, true);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // ─── Main Blueprint 3D Group ───
-    const blueprintGroup = new THREE.Group();
-    scene.add(blueprintGroup);
+    // ─── 3D Floor Perspective Blueprint Grid ───
+    const gridHelper = new THREE.GridHelper(60, 40, "#2563EB", "#D0D7E2");
+    gridHelper.position.y = -3.8;
+    // Set subtle opacity on grid
+    if (Array.isArray(gridHelper.material)) {
+      gridHelper.material.forEach((m) => {
+        m.transparent = true;
+        m.opacity = 0.18;
+      });
+    } else {
+      gridHelper.material.transparent = true;
+      gridHelper.material.opacity = 0.18;
+    }
+    scene.add(gridHelper);
 
-    // Dynamic responsive scale based on container width and aspect ratio
-    const updateScale = (w: number, h: number) => {
-      const aspect = w / Math.max(h, 1);
-      if (aspect < 0.85 || w < 420) {
-        blueprintGroup.scale.setScalar(0.70);
-        camera.position.z = 9.2;
-      } else if (w < 640) {
-        blueprintGroup.scale.setScalar(0.80);
-        camera.position.z = 8.5;
-      } else if (w < 1024) {
-        blueprintGroup.scale.setScalar(0.90);
-        camera.position.z = 8.2;
+    // ─── 3D Hero Blueprint Group ───
+    const heroBlueprintGroup = new THREE.Group();
+    scene.add(heroBlueprintGroup);
+
+    // Responsive position and base scale
+    let baseScale = 1.0;
+    const updateLayout = (w: number, h: number) => {
+      const isDesktop = w >= 1024;
+      const isTablet = w >= 640 && w < 1024;
+
+      if (isDesktop) {
+        heroBlueprintGroup.position.set(1.45, 0.05, 0);
+        baseScale = 1.05;
+      } else if (isTablet) {
+        heroBlueprintGroup.position.set(0.6, 0.1, 0);
+        baseScale = 0.9;
       } else {
-        blueprintGroup.scale.setScalar(1.02);
-        camera.position.z = 7.9;
+        heroBlueprintGroup.position.set(0, 0.15, 0);
+        baseScale = 0.76;
       }
+      heroBlueprintGroup.scale.setScalar(baseScale);
     };
-    updateScale(width, height);
+    updateLayout(width, height);
 
-    // ─── 1. Concentric Drafting Circles ───
-    const makeRing = (radius: number, color: string, opacity: number, segments = 80) => {
+    // ─── Concentric Architectural Drafting Circles ───
+    const makeRing = (radius: number, color: string, opacity: number, segments = 90) => {
       const ringGeo = new THREE.BufferGeometry();
       const pts = [];
       for (let i = 0; i <= segments; i++) {
@@ -71,16 +83,17 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
       );
     };
 
-    blueprintGroup.add(makeRing(3.2, "#2563EB", 0.35));
-    blueprintGroup.add(makeRing(2.6, "#7C3AED", 0.28));
-    blueprintGroup.add(makeRing(1.8, "#F97316", 0.35));
-    blueprintGroup.add(makeRing(1.1, "#2563EB", 0.45));
+    heroBlueprintGroup.add(makeRing(4.5, "#2563EB", 0.12));
+    heroBlueprintGroup.add(makeRing(3.2, "#2563EB", 0.28));
+    heroBlueprintGroup.add(makeRing(2.6, "#7C3AED", 0.22));
+    heroBlueprintGroup.add(makeRing(1.8, "#F97316", 0.3));
+    heroBlueprintGroup.add(makeRing(1.1, "#2563EB", 0.42));
 
-    // ─── 2. Crosshairs & Drafting Axes ───
+    // ─── Crosshairs & Diagonal Drafting Axes ───
     const axisMat = new THREE.LineBasicMaterial({
       color: "#2563EB",
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.16,
     });
     const makeLine = (p1: [number, number, number], p2: [number, number, number]) => {
       const geo = new THREE.BufferGeometry().setFromPoints([
@@ -90,44 +103,45 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
       return new THREE.Line(geo, axisMat);
     };
 
-    blueprintGroup.add(makeLine([-3.8, 0, 0], [3.8, 0, 0]));
-    blueprintGroup.add(makeLine([0, -3.8, 0], [0, 3.8, 0]));
-    blueprintGroup.add(makeLine([-2.7, -2.7, 0], [2.7, 2.7, 0]));
-    blueprintGroup.add(makeLine([-2.7, 2.7, 0], [2.7, -2.7, 0]));
+    heroBlueprintGroup.add(makeLine([-6, 0, 0], [6, 0, 0]));
+    heroBlueprintGroup.add(makeLine([0, -6, 0], [0, 6, 0]));
+    heroBlueprintGroup.add(makeLine([-4, -4, 0], [4, 4, 0]));
+    heroBlueprintGroup.add(makeLine([-4, 4, 0], [4, -4, 0]));
 
-    // Perimeter tick markers at 0, 90, 180, 270 degrees
-    const tickLen = 0.18;
+    // Perimeter tick markers
+    const tickMat = new THREE.LineBasicMaterial({ color: "#2563EB", transparent: true, opacity: 0.4 });
+    const tickLen = 0.25;
     const ticks = [
       makeLine([3.2 - tickLen, 0, 0], [3.2 + tickLen, 0, 0]),
       makeLine([-3.2 - tickLen, 0, 0], [-3.2 + tickLen, 0, 0]),
       makeLine([0, 3.2 - tickLen, 0], [0, 3.2 + tickLen, 0]),
       makeLine([0, -3.2 - tickLen, 0], [0, -3.2 + tickLen, 0]),
     ];
-    ticks.forEach((t) => blueprintGroup.add(t));
+    ticks.forEach((t) => heroBlueprintGroup.add(t));
 
-    // ─── 3. Geometric "AR" Monogram Wireframe ───
+    // ─── Geometric "AR" Monogram Wireframe ───
     const arGlyphGroup = new THREE.Group();
-    blueprintGroup.add(arGlyphGroup);
+    heroBlueprintGroup.add(arGlyphGroup);
 
     const glyphMatDark = new THREE.LineBasicMaterial({
       color: "#141414",
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.7,
     });
     const glyphMatBlue = new THREE.LineBasicMaterial({
       color: "#2563EB",
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.8,
     });
     const glyphMatOrange = new THREE.LineBasicMaterial({
       color: "#F97316",
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.8,
     });
     const glyphMatPurple = new THREE.LineBasicMaterial({
       color: "#7C3AED",
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.65,
     });
 
     // Letter 'A' wireframe geometry
@@ -187,8 +201,8 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
     arGlyphGroup.add(addWireframe(aOutline, glyphMatPurple, 0.08));
     arGlyphGroup.add(addWireframe(rLoop, glyphMatPurple, 0.08));
 
-    // ─── 4. Vertex Joint Nodes (Glowing Architectural Points) ───
-    const nodeDotGeo = new THREE.SphereGeometry(0.045, 12, 12);
+    // Glowing Vertex Joint Nodes
+    const nodeDotGeo = new THREE.SphereGeometry(0.045, 10, 10);
     const nodeDotMatBlue = new THREE.MeshBasicMaterial({ color: "#2563EB" });
     const nodeDotMatOrange = new THREE.MeshBasicMaterial({ color: "#F97316" });
 
@@ -207,21 +221,21 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
     keyNodes.forEach((pos, idx) => {
       const dot = new THREE.Mesh(nodeDotGeo, idx % 2 === 0 ? nodeDotMatBlue : nodeDotMatOrange);
       dot.position.set(pos[0], pos[1], pos[2]);
-      blueprintGroup.add(dot);
+      heroBlueprintGroup.add(dot);
     });
 
-    // ─── 5. Ambient Spatial Particles ───
-    const particleCount = 50;
+    // ─── Ambient Spatial Dust Particles ───
+    const particleCount = 70;
     const pPos = new Float32Array(particleCount * 3);
     const pColors = new Float32Array(particleCount * 3);
     const palette = [new THREE.Color("#2563EB"), new THREE.Color("#7C3AED"), new THREE.Color("#F97316")];
 
     for (let i = 0; i < particleCount; i++) {
-      const r = 1.0 + Math.random() * 2.8;
+      const r = 1.0 + Math.random() * 4.2;
       const th = Math.random() * Math.PI * 2;
       pPos[i * 3] = Math.cos(th) * r;
       pPos[i * 3 + 1] = Math.sin(th) * r;
-      pPos[i * 3 + 2] = (Math.random() - 0.5) * 1.5;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) * 2.2;
 
       const col = palette[Math.floor(Math.random() * palette.length)];
       pColors[i * 3] = col.r;
@@ -233,68 +247,39 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
     dustGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
     dustGeo.setAttribute("color", new THREE.BufferAttribute(pColors, 3));
     const dustMat = new THREE.PointsMaterial({
-      size: 0.045,
+      size: 0.048,
       vertexColors: true,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.6,
     });
     const dustPoints = new THREE.Points(dustGeo, dustMat);
-    blueprintGroup.add(dustPoints);
+    heroBlueprintGroup.add(dustPoints);
 
-    // ─── Interactive Drag & Touch Rotation ───
-    let isDragging = false;
-    let prevPointerX = 0;
-    let prevPointerY = 0;
-    let rotX = 0;
-    let rotY = 0;
-    let targetRotX = 0;
-    let targetRotY = 0;
+    // ─── Scroll Kinematics & Mouse Tracking ───
+    let scrollProgress = 0;
+    let smoothScroll = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
 
-    const onPointerDown = (e: MouseEvent | TouchEvent) => {
-      isDragging = true;
-      setIsInteracting(true);
-      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-      prevPointerX = clientX;
-      prevPointerY = clientY;
+    const onScroll = () => {
+      const heroEl = mount.parentElement;
+      const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
+      const sY = window.scrollY;
+      // Normalizes scroll progress from 0 to 1 over the hero section
+      scrollProgress = Math.max(0, Math.min(1.2, sY / (heroHeight * 0.85)));
     };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
 
-    const onPointerMove = (e: MouseEvent | TouchEvent) => {
-      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-      if (isDragging) {
-        const deltaX = clientX - prevPointerX;
-        const deltaY = clientY - prevPointerY;
-        targetRotY += deltaX * 0.008;
-        targetRotX += deltaY * 0.008;
-        prevPointerX = clientX;
-        prevPointerY = clientY;
-      } else {
-        // Gentle mouse parallax when not dragging
-        const rect = mount.getBoundingClientRect();
-        const normX = ((clientX - rect.left) / rect.width) * 2 - 1;
-        const normY = -(((clientY - rect.top) / rect.height) * 2 - 1);
-        targetRotY = normX * 0.35;
-        targetRotX = -normY * 0.35;
-      }
+    const onMouseMove = (e: MouseEvent) => {
+      targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     };
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
 
-    const onPointerUp = () => {
-      isDragging = false;
-      setTimeout(() => setIsInteracting(false), 800);
-    };
-
-    const mountEl = mount;
-    mountEl.addEventListener("mousedown", onPointerDown);
-    mountEl.addEventListener("mousemove", onPointerMove);
-    window.addEventListener("mouseup", onPointerUp);
-
-    mountEl.addEventListener("touchstart", onPointerDown, { passive: true });
-    mountEl.addEventListener("touchmove", onPointerMove, { passive: true });
-    window.addEventListener("touchend", onPointerUp);
-
-    // ─── Animation Loop ───
+    // ─── Animation Loop with Zoom Kinematics ───
     let animId: number;
     const clock = new THREE.Clock();
 
@@ -302,23 +287,47 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
       animId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
-      // Smooth lerp rotation
-      rotX += (targetRotX - rotX) * 0.08;
-      rotY += (targetRotY - rotY) * 0.08;
+      // Inertial scroll lerp
+      smoothScroll += (scrollProgress - smoothScroll) * 0.08;
+      const sp = smoothScroll;
 
-      // Continuous slow architectural rotation on Z
-      blueprintGroup.rotation.z = t * 0.09;
-      blueprintGroup.rotation.y = rotY;
-      blueprintGroup.rotation.x = rotX;
+      // Mouse lerp
+      mouseX += (targetMouseX - mouseX) * 0.06;
+      mouseY += (targetMouseY - mouseY) * 0.06;
 
-      // Gentle floating dust
-      dustPoints.rotation.z = -t * 0.04;
+      // ─── ZOOM ON SCROLL KINEMATICS (matching Cinematic 3D Projects Section) ───
+      // Scale expands as you scroll
+      const currentScale = baseScale * (1 + sp * 2.4);
+      heroBlueprintGroup.scale.set(currentScale, currentScale, currentScale);
+
+      // Smoothly drift towards center as it zooms forward
+      const targetPosX = (width >= 1024 ? 1.4 : width >= 640 ? 0.5 : 0) * Math.max(0, 1 - sp * 0.4);
+      heroBlueprintGroup.position.x = targetPosX;
+
+      // Camera flies forward into the 3D model
+      const camZ = baseCameraZ - sp * 4.8;
+      camera.position.set(mouseX * 0.35, mouseY * 0.25, camZ);
+      camera.lookAt(targetPosX * 0.2, 0, 0);
+
+      // Rotation accelerates subtly with scroll
+      heroBlueprintGroup.rotation.z = t * 0.09 + sp * 0.95;
+      heroBlueprintGroup.rotation.x = mouseY * 0.22;
+      heroBlueprintGroup.rotation.y = mouseX * 0.22;
+
+      // Subtle dust drift
+      dustPoints.rotation.z = -t * 0.03;
+
+      // Graceful fade as user scrolls out of Hero into Section 2
+      if (mount) {
+        const exitFade = sp > 0.8 ? Math.max(0, 1 - (sp - 0.8) * 3.3) : 1;
+        mount.style.opacity = String(exitFade);
+      }
 
       renderer.render(scene, camera);
     };
     animate();
 
-    // ─── Responsive Resize Observer ───
+    // ─── Resize Observer ───
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const rw = entry.contentRect.width;
@@ -329,7 +338,7 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
           camera.aspect = width / height;
           camera.updateProjectionMatrix();
           renderer.setSize(width, height, true);
-          updateScale(width, height);
+          updateLayout(width, height);
         }
       }
     });
@@ -338,12 +347,8 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
     return () => {
       cancelAnimationFrame(animId);
       ro.disconnect();
-      mountEl.removeEventListener("mousedown", onPointerDown);
-      mountEl.removeEventListener("mousemove", onPointerMove);
-      window.removeEventListener("mouseup", onPointerUp);
-      mountEl.removeEventListener("touchstart", onPointerDown);
-      mountEl.removeEventListener("touchmove", onPointerMove);
-      window.removeEventListener("touchend", onPointerUp);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("mousemove", onMouseMove);
       renderer.dispose();
     };
   }, []);
@@ -351,18 +356,15 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
   return (
     <div
       ref={mountRef}
-      className={className}
       style={{
-        position: "relative",
+        position: "absolute",
+        top: 0,
+        left: 0,
         width: "100%",
         height: "100%",
-        minHeight: 340,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: isInteracting ? "grabbing" : "grab",
-        userSelect: "none",
-        touchAction: "none",
+        pointerEvents: "none",
+        zIndex: 0,
+        overflow: "hidden",
       }}
     >
       <canvas
@@ -373,74 +375,6 @@ export default function HeroBlueprint3D({ className }: HeroBlueprint3DProps) {
           height: "100%",
         }}
       />
-
-      {/* Top HUD Tag */}
-      <div
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 14,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "4px 10px",
-          background: "rgba(255, 255, 255, 0.8)",
-          backdropFilter: "blur(8px)",
-          borderRadius: 6,
-          border: "1px solid rgba(20, 20, 20, 0.08)",
-          pointerEvents: "none",
-        }}
-      >
-        <span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: "#2563EB",
-            boxShadow: "0 0 6px #2563EB",
-          }}
-        />
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 9,
-            letterSpacing: "0.14em",
-            color: "#141414",
-            fontWeight: 700,
-          }}
-        >
-          AR // 3D BLUEPRINT
-        </span>
-      </div>
-
-      {/* Bottom Drag Hint */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          padding: "4px 12px",
-          background: "rgba(255, 255, 255, 0.75)",
-          backdropFilter: "blur(8px)",
-          borderRadius: 999,
-          border: "1px solid rgba(20, 20, 20, 0.06)",
-          pointerEvents: "none",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 8.5,
-            letterSpacing: "0.12em",
-            color: "#666",
-            fontWeight: 600,
-          }}
-        >
-          INTERACTIVE 3D WIREFRAME · DRAG TO ROTATE
-        </span>
-      </div>
     </div>
   );
 }

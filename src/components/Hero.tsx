@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import Tech3DNetwork from "./Tech3DNetwork";
-import HeroBlueprintBg from "./HeroBlueprintBg";
+import HeroBlueprint3D from "./HeroBlueprint3D";
 import { PERSONAL_INFO } from "../data/portfolioData";
 
 interface HeroProps {
@@ -31,8 +30,6 @@ export default function Hero({ onOpenPage }: HeroProps) {
         overflow: "hidden",
       }}
     >
-      {/* 3D Geometric Architectural Blueprint Wireframe from TopSection */}
-      <HeroBlueprintBg />
 
       <div
         style={{
@@ -239,20 +236,20 @@ export default function Hero({ onOpenPage }: HeroProps) {
           </div>
         </div>
 
-        {/* Right: 3D Interactive Tech Network (Attached 3D Model) */}
+        {/* Right: 3D Architectural Blueprint Wireframe Model (TopSection Model) */}
         <div
           style={{
             position: "relative",
             width: "100%",
-            minHeight: isMobile ? 380 : 480,
-            height: isMobile ? 390 : 480,
+            minHeight: isMobile ? 360 : 490,
+            height: isMobile ? 380 : 490,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginTop: isDesktop ? 0 : 8,
+            marginTop: isDesktop ? 0 : 12,
           }}
         >
-          <Tech3DNetwork coreLabel="AR" accentColor="#2563EB" isMobile={isMobile} />
+          <HeroBlueprint3D />
         </div>
       </div>
     </section>

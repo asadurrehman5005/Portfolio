@@ -25,7 +25,7 @@ export default function Hero({ onOpenPage }: HeroProps) {
       id="hero"
       style={{
         background: "#FAF9F6",
-        padding: isMobile ? "98px 5vw 24px" : isDesktop ? "82px 5vw 32px" : "94px 5vw 28px",
+        padding: isMobile ? "126px 5vw 24px" : isDesktop ? "86px 5vw 32px" : "112px 5vw 28px",
         position: "relative",
         overflow: "hidden",
       }}
@@ -168,8 +168,8 @@ export default function Hero({ onOpenPage }: HeroProps) {
           style={{
             position: "relative",
             width: "100%",
-            minHeight: isMobile ? 320 : 460,
-            height: isMobile ? 340 : 480,
+            minHeight: isMobile ? 380 : 480,
+            height: isMobile ? 390 : 480,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

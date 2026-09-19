@@ -69,12 +69,12 @@ export default function Tech3DNetwork({
     };
 
     let { w: width, h: height } = getContainerDims();
-    const isNarrow = isMobile ?? width < 640;
+    const isNarrow = width < 768;
 
     // ─── Scene & Camera ───
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    camera.position.set(0, 0, isNarrow ? 9.2 : 7.2);
+    camera.position.set(0, 0, 7.2);
 
     // ─── Renderer ───
     const renderer = new THREE.WebGLRenderer({
@@ -108,7 +108,7 @@ export default function Tech3DNetwork({
 
     // ─── Main Rotating Group with Responsive Scaling ───
     const mainGroup = new THREE.Group();
-    mainGroup.scale.setScalar(isNarrow ? 0.72 : 1.0);
+    mainGroup.scale.setScalar(isNarrow ? 0.92 : 1.0);
     scene.add(mainGroup);
 
     // ─── Nodes Generation (matching reference) ───
@@ -533,10 +533,10 @@ export default function Tech3DNetwork({
       if (newW <= 0 || newH <= 0) return;
       width = newW;
       height = newH;
-      const narrow = isMobile ?? width < 640;
+      const narrow = width < 768;
       camera.aspect = width / height;
-      camera.position.set(0, 0, narrow ? 9.2 : 7.2);
-      mainGroup.scale.setScalar(narrow ? 0.72 : 1.0);
+      camera.position.set(0, 0, 7.2);
+      mainGroup.scale.setScalar(narrow ? 0.92 : 1.0);
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, true);
     };
@@ -580,7 +580,7 @@ export default function Tech3DNetwork({
         position: "relative",
         width: "100%",
         height: "100%",
-        minHeight: isMobile ? 320 : 460,
+        minHeight: isMobile ? 380 : 460,
         overflow: "hidden",
         userSelect: "none",
         touchAction: "pan-y",
@@ -617,7 +617,7 @@ export default function Tech3DNetwork({
             style={{
               fontFamily: "'DM Sans', 'Inter', sans-serif",
               fontWeight: 900,
-              fontSize: isMobile ? 21 : 26,
+              fontSize: isMobile ? 24 : 26,
               color: "#FFFFFF",
               letterSpacing: "0.08em",
               textShadow: `0 0 24px ${accentColor}, 0 0 8px rgba(255,255,255,0.9)`,
@@ -651,10 +651,10 @@ export default function Tech3DNetwork({
                   background: "rgba(255, 255, 255, 0.94)",
                   backdropFilter: "blur(8px)",
                   borderRadius: 6,
-                  padding: isMobile ? "3px 8px" : "4px 10px",
+                  padding: isMobile ? "4px 9px" : "4px 10px",
                   display: "flex",
                   alignItems: "center",
-                  gap: isMobile ? 4 : 6,
+                  gap: isMobile ? 5 : 6,
                   boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.05)",
                   whiteSpace: "nowrap",
                   border: "1px solid rgba(20, 20, 20, 0.08)",
@@ -662,8 +662,8 @@ export default function Tech3DNetwork({
               >
                 <span
                   style={{
-                    width: isMobile ? 5 : 7,
-                    height: isMobile ? 5 : 7,
+                    width: isMobile ? 6 : 7,
+                    height: isMobile ? 6 : 7,
                     borderRadius: "50%",
                     background: lbl.color,
                     flexShrink: 0,
@@ -673,7 +673,7 @@ export default function Tech3DNetwork({
                   style={{
                     fontFamily: "'JetBrains Mono', 'DM Sans', sans-serif",
                     fontWeight: 700,
-                    fontSize: isMobile ? 9 : 10.5,
+                    fontSize: isMobile ? 10 : 10.5,
                     letterSpacing: "0.08em",
                     color: "#0F172A",
                   }}

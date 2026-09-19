@@ -3,10 +3,22 @@ import { PERSONAL_INFO } from "../data/portfolioData";
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", type: "", message: "" });
+  const [honeypot, setHoneypot] = useState("");
   const [sent, setSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Anti-bot honeypot check: if hidden field is filled, silently reject
+    if (honeypot.trim().length > 0) {
+      console.warn("Spam detected.");
+      return;
+    }
+
+    const subject = encodeURIComponent(`Project Inquiry: ${formData.type || "New Project"}`);
+    const body = encodeURIComponent(
+      `Hi Asad,\n\nName: ${formData.name}\nEmail: ${formData.email}\nProject Type: ${formData.type}\n\nMessage:\n${formData.message}\n`
+    );
+    window.location.href = `mailto:${PERSONAL_INFO.email}?subject=${subject}&body=${body}`;
     setSent(true);
   };
 
@@ -104,6 +116,17 @@ export default function Contact() {
                   padding: "24px 20px",
                 }}
               >
+                {/* Honeypot field - hidden from genuine users, traps automated spam bots */}
+                <input
+                  type="text"
+                  name="_hp_security_check"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  style={{ display: "none", position: "absolute", opacity: 0, pointerEvents: "none" }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
                 <input className="underline-input" placeholder="YOUR NAME" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                 <input className="underline-input" placeholder="EMAIL ADDRESS" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                 <input className="underline-input" placeholder="PROJECT TYPE" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} />

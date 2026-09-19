@@ -98,6 +98,8 @@ export default function About() {
             <img
               src="/profile.jpg"
               alt="Asad Ur Rehman — Creative Developer &amp; Full-Stack Engineer"
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "100%",

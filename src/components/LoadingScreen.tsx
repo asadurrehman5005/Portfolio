@@ -11,12 +11,12 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
         if (c >= 100) {
           clearInterval(t);
           setFading(true);
-          setTimeout(onComplete, 450);
+          setTimeout(onComplete, 220);
           return 100;
         }
-        return c + 2;
+        return c + 5;
       });
-    }, 12);
+    }, 8);
     return () => clearInterval(t);
   }, [onComplete]);
 
@@ -31,7 +31,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        transition: "opacity 0.45s ease",
+        transition: "opacity 0.25s ease",
         opacity: fading ? 0 : 1,
         pointerEvents: fading ? "none" : "all",
       }}

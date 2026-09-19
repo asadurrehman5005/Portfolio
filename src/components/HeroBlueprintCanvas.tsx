@@ -27,7 +27,7 @@ export default function HeroBlueprintCanvas() {
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height, true);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     // ─── 3D Floor Perspective Blueprint Grid ───
     const gridHelper = new THREE.GridHelper(60, 40, "#2563EB", "#D0D7E2");
@@ -255,35 +255,46 @@ export default function HeroBlueprintCanvas() {
     const dustPoints = new THREE.Points(dustGeo, dustMat);
     heroBlueprintGroup.add(dustPoints);
 
-    // ─── Scroll Kinematics & Mouse Tracking ───
+    // ─── Scroll Kinematics & Mouse Tracking with IntersectionObserver ───
+    let isVisible = true;
     let scrollProgress = 0;
     let smoothScroll = 0;
     let mouseX = 0;
     let mouseY = 0;
     let targetMouseX = 0;
     let targetMouseY = 0;
+    let ticking = false;
 
     const onScroll = () => {
-      const heroEl = mount.parentElement;
-      const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
-      const sY = window.scrollY;
-      // Normalizes scroll progress from 0 to 1 over the hero section
-      scrollProgress = Math.max(0, Math.min(1.2, sY / (heroHeight * 0.85)));
+      if (!isVisible) return;
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const heroEl = mount.parentElement;
+          const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
+          const sY = window.scrollY;
+          // Normalizes scroll progress from 0 to 1 over the hero section
+          scrollProgress = Math.max(0, Math.min(1.2, sY / (heroHeight * 0.85)));
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
     const onMouseMove = (e: MouseEvent) => {
+      if (!isVisible) return;
       targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
       targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     };
     window.addEventListener("mousemove", onMouseMove, { passive: true });
 
     // ─── Animation Loop with Zoom Kinematics ───
-    let animId: number;
+    let animId = 0;
     const clock = new THREE.Clock();
 
     const animate = () => {
+      if (!isVisible) return;
       animId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
@@ -327,6 +338,23 @@ export default function HeroBlueprintCanvas() {
     };
     animate();
 
+    // ─── Visibility Observer (Pauses 3D rendering when scrolled out of view) ───
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const wasVisible = isVisible;
+        isVisible = entry.isIntersecting;
+        if (isVisible && !wasVisible) {
+          clock.start();
+          animate();
+        } else if (!isVisible && animId) {
+          cancelAnimationFrame(animId);
+          animId = 0;
+        }
+      },
+      { threshold: 0.02 }
+    );
+    io.observe(mount);
+
     // ─── Resize Observer ───
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -345,7 +373,8 @@ export default function HeroBlueprintCanvas() {
     ro.observe(mount);
 
     return () => {
-      cancelAnimationFrame(animId);
+      if (animId) cancelAnimationFrame(animId);
+      io.disconnect();
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("mousemove", onMouseMove);

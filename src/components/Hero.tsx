@@ -89,6 +89,10 @@ export default function Hero({ onOpenPage }: HeroProps) {
             <img
               src="/profile.jpg"
               alt="Asad Ur Rehman"
+              width={34}
+              height={34}
+              decoding="async"
+              fetchPriority="high"
               style={{
                 width: 34,
                 height: 34,

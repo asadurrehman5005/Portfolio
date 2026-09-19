@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import type { Project } from "./types";
 
 // Components
@@ -17,11 +17,11 @@ import Services from "./components/Services";
 import Trust from "./components/Trust";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
-import ProjectModal from "./components/ProjectModal";
 
-// Dedicated Second Pages
-import DedicatedWorkPage from "./pages/DedicatedWorkPage";
-import DedicatedContactPage from "./pages/DedicatedContactPage";
+// Lazy-loaded heavy components (loaded on-demand for maximum page speed)
+const ProjectModal = lazy(() => import("./components/ProjectModal"));
+const DedicatedWorkPage = lazy(() => import("./pages/DedicatedWorkPage"));
+const DedicatedContactPage = lazy(() => import("./pages/DedicatedContactPage"));
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -42,11 +42,13 @@ export default function App() {
       {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
 
       {selectedProject && (
-        <ProjectModal
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          onContact={() => openPage("contact-page")}
-        />
+        <Suspense fallback={null}>
+          <ProjectModal
+            project={selectedProject}
+            onClose={() => setSelectedProject(null)}
+            onContact={() => openPage("contact-page")}
+          />
+        </Suspense>
       )}
 
       <div style={{ opacity: loading ? 0 : 1, transition: "opacity 0.5s ease" }}>
@@ -73,22 +75,26 @@ export default function App() {
 
         {/* View 2: Dedicated Work Page (Page 2) */}
         {activeView === "work-page" && (
-          <main key="work-page">
-            <DedicatedWorkPage
-              onBack={() => openPage("home")}
-              onOpenContact={() => openPage("contact-page")}
-              onSelectProject={(p) => setSelectedProject(p)}
-            />
-            <Footer onOpenPage={openPage} />
-          </main>
+          <Suspense fallback={<div style={{ minHeight: "100vh", background: "#FAF9F6" }} />}>
+            <main key="work-page">
+              <DedicatedWorkPage
+                onBack={() => openPage("home")}
+                onOpenContact={() => openPage("contact-page")}
+                onSelectProject={(p) => setSelectedProject(p)}
+              />
+              <Footer onOpenPage={openPage} />
+            </main>
+          </Suspense>
         )}
 
         {/* View 3: Dedicated Contact Page (Page 3) */}
         {activeView === "contact-page" && (
-          <main key="contact-page">
-            <DedicatedContactPage onBack={() => openPage("home")} />
-            <Footer onOpenPage={openPage} />
-          </main>
+          <Suspense fallback={<div style={{ minHeight: "100vh", background: "#FAF9F6" }} />}>
+            <main key="contact-page">
+              <DedicatedContactPage onBack={() => openPage("home")} />
+              <Footer onOpenPage={openPage} />
+            </main>
+          </Suspense>
         )}
       </div>
     </div>

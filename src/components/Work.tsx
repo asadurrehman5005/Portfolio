@@ -358,6 +358,8 @@ export default function Work({ onSelectProject }: WorkProps) {
                     <img
                       src={p.image}
                       alt={`${p.title} — ${p.subtitle}`}
+                      loading="lazy"
+                      decoding="async"
                       style={{
                         width: "100%",
                         height: "100%",
@@ -732,6 +734,8 @@ export default function Work({ onSelectProject }: WorkProps) {
                   <img
                     src={p.image}
                     alt={`${p.title} — ${p.subtitle}`}
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                   {p.isCurrent && (

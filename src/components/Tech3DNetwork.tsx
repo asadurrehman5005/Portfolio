@@ -84,7 +84,7 @@ export default function Tech3DNetwork({
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height, true);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     // ─── Lights ───
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
@@ -382,7 +382,10 @@ export default function Tech3DNetwork({
     const damping = 0.82;
     const mouseInfluence = 0.6;
 
+    let isVisible = true;
+
     const animate = () => {
+      if (!isVisible) return;
       animationFrameId = requestAnimationFrame(animate);
       const currentTime = performance.now();
       const delta = Math.min((currentTime - lastTime) * 0.001, 0.1);
@@ -526,6 +529,22 @@ export default function Tech3DNetwork({
       renderer.render(scene, camera);
     };
 
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        const wasVisible = isVisible;
+        isVisible = entry.isIntersecting;
+        if (isVisible && !wasVisible) {
+          clock.start();
+          animate();
+        } else if (!isVisible && animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = 0;
+        }
+      },
+      { threshold: 0.05 }
+    );
+    visibilityObserver.observe(mount);
+
     animate();
 
     // ─── Auto-Resize with ResizeObserver & Window Resize ───
@@ -560,7 +579,8 @@ export default function Tech3DNetwork({
     window.addEventListener("resize", handleResize);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      visibilityObserver.disconnect();
       resizeObserver.disconnect();
       window.removeEventListener("resize", handleResize);
       canvas.removeEventListener("mousedown", handlePointerDown);

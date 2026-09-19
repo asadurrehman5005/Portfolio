@@ -53,13 +53,14 @@ export default function Hero({ onOpenPage }: HeroProps) {
             </span>
           </div>
 
-          <div
+          <h1
             style={{
               fontFamily: "'Instrument Sans', sans-serif",
               fontWeight: 700,
               lineHeight: 0.92,
               letterSpacing: "-0.04em",
               fontSize: "clamp(44px, 8vw, 92px)",
+              margin: 0,
             }}
           >
             <div
@@ -79,7 +80,7 @@ export default function Hero({ onOpenPage }: HeroProps) {
               <span className="gradient-text">REHMAN</span>
               <span style={{ color: "#F97316", fontSize: "1.1em", lineHeight: 1 }}>.</span>
             </div>
-          </div>
+          </h1>
 
           <p
             style={{

@@ -111,7 +111,7 @@ const DESKTOP_SLOTS: SlotConfig[] = [
 // Mobile positions (Width 390, Height 530)
 // Slot 0 is the zoomed Center Hero Spotlight with ample breathing room for surrounding cards
 const MOBILE_SLOTS: SlotConfig[] = [
-  { top: "44%", left: "50%", width: 248, height: 172, rx: 0, ry: 0, rz: 0, translateZ: 65, scale: 1.05, zIndex: 45, floatClass: "float-a", floatDelay: "0s" }, // 0: Darmayan Zoomed Hero
+  { top: "44%", left: "50%", width: 248, height: 172, rx: 0, ry: 0, rz: 0, translateZ: 65, scale: 1.05, zIndex: 45, floatClass: "float-a", floatDelay: "0s" }, // 0: Centered Spotlight Hero
   { top: "14%", left: "19%", width: 116, height: 80, rx: 8, ry: 14, rz: 3, translateZ: -15, scale: 0.9, zIndex: 12, floatClass: "float-b", floatDelay: "0.5s" }, // 1: Upper Left
   { top: "13%", left: "81%", width: 116, height: 80, rx: 8, ry: -14, rz: -3, translateZ: -15, scale: 0.9, zIndex: 12, floatClass: "float-c", floatDelay: "1.1s" }, // 2: Upper Right
   { top: "46%", left: "9%", width: 110, height: 76, rx: 4, ry: 20, rz: 4, translateZ: -5, scale: 0.9, zIndex: 14, floatClass: "float-a", floatDelay: "0.8s" }, // 3: Mid Left
@@ -419,8 +419,8 @@ export default function Services({ onOpenContact }: ServicesProps) {
               <span>✨</span>
               <span>
                 {isMobile
-                  ? "Kisi bhi card par tap karein — wo darmayan mein zoom ho jaye ga"
-                  : "Click any service card to zoom it into the center"}
+                  ? "Tap any card to bring it into focus"
+                  : "Click any service card to bring it into focus"}
               </span>
             </div>
           </div>
@@ -462,7 +462,7 @@ export default function Services({ onOpenContact }: ServicesProps) {
                 }}
               >
                 {SERVICE_CARDS.map((srv) => {
-                  // The active card is ALWAYS mapped to slot 0 (Dead Center / Zoomed in darmayan)!
+                  // The active card is ALWAYS mapped to slot 0 (Dead Center / Zoomed focus card)!
                   const slotIdx = (srv.id - activeId + SERVICE_CARDS.length) % SERVICE_CARDS.length;
                   const slot = currentSlots[slotIdx];
                   const isCenter = slotIdx === 0;
@@ -531,7 +531,7 @@ export default function Services({ onOpenContact }: ServicesProps) {
                         {/* Photo */}
                         <img
                         src={srv.image}
-                        alt={srv.title}
+                        alt={`${srv.title} — ${srv.desc}`}
                         style={{
                           width: "100%",
                           height: "100%",

@@ -357,7 +357,7 @@ export default function Work({ onSelectProject }: WorkProps) {
                     {/* Background Project Image with Viewport Depth */}
                     <img
                       src={p.image}
-                      alt={p.title}
+                      alt={`${p.title} — ${p.subtitle}`}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -731,7 +731,7 @@ export default function Work({ onSelectProject }: WorkProps) {
                 <div style={{ position: "relative", height: 190, overflow: "hidden" }}>
                   <img
                     src={p.image}
-                    alt={p.title}
+                    alt={`${p.title} — ${p.subtitle}`}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                   {p.isCurrent && (

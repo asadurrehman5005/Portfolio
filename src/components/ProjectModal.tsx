@@ -92,7 +92,7 @@ export default function ProjectModal({ project, onClose, onContact }: ProjectMod
         </p>
 
         <div style={{ width: "100%", height: 240, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
-          <img src={project.image} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={project.image} alt={`${project.title} — ${project.subtitle}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
 
         <div style={{ marginBottom: 20 }}>

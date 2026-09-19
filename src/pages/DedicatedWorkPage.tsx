@@ -324,7 +324,7 @@ export default function DedicatedWorkPage({
                   >
                     <img
                       src={p.image}
-                      alt={p.title}
+                      alt={`${p.title} — ${p.subtitle}`}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -582,7 +582,7 @@ export default function DedicatedWorkPage({
                 style={{ height: 260, borderRadius: "22px 6px 22px 6px", border: p.isCurrent ? "2px solid #2563EB" : "1px solid rgba(20, 20, 20, 0.08)" }}
                 onClick={() => onSelectProject(p)}
               >
-                <img src={p.image} alt={p.title} />
+                <img src={p.image} alt={`${p.title} — ${p.subtitle}`} />
                 <div className="project-overlay" style={{ padding: "18px 20px" }}>
                   <div className="project-arrow">↗</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>

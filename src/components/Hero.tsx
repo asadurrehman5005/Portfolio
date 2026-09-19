@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Tech3DNetwork from "./Tech3DNetwork";
+import HeroBlueprintBg from "./HeroBlueprintBg";
 import { PERSONAL_INFO } from "../data/portfolioData";
 
 interface HeroProps {
@@ -30,6 +31,9 @@ export default function Hero({ onOpenPage }: HeroProps) {
         overflow: "hidden",
       }}
     >
+      {/* 3D Geometric Architectural Blueprint Wireframe from TopSection */}
+      <HeroBlueprintBg />
+
       <div
         style={{
           maxWidth: 1240,
@@ -38,10 +42,46 @@ export default function Hero({ onOpenPage }: HeroProps) {
           gridTemplateColumns: isDesktop ? "1.1fr 1fr" : "1fr",
           gap: isDesktop ? 28 : 20,
           alignItems: "center",
+          position: "relative",
+          zIndex: 2,
         }}
       >
         {/* Left: Typography */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          {/* TopSection HUD Tag */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginBottom: "12px",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "10.5px",
+                letterSpacing: "0.22em",
+                color: "#2563EB",
+                fontWeight: 700,
+              }}
+            >
+              // ARCHITECTURAL IDENTITY
+            </span>
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "9.5px",
+                letterSpacing: "0.14em",
+                color: "#999",
+                borderLeft: "1px solid rgba(20, 20, 20, 0.15)",
+                paddingLeft: "10px",
+              }}
+            >
+              SEC 01 // TOP
+            </span>
+          </div>
+
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <img
               src="/profile.jpg"
@@ -160,6 +200,42 @@ export default function Hero({ onOpenPage }: HeroProps) {
             <span>WORKING WORLDWIDE</span>
             <span style={{ color: "#ddd" }}>·</span>
             <span style={{ color: "#2563EB", fontWeight: 600 }}>BUILDING {PERSONAL_INFO.currentWork}</span>
+          </div>
+
+          {/* Futuristic Coordinates Tag from TopSection */}
+          <div style={{ marginTop: 14 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "5px 12px",
+                borderRadius: "999px",
+                background: "rgba(37, 99, 235, 0.05)",
+                border: "1px solid rgba(37, 99, 235, 0.15)",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#2563EB",
+                  boxShadow: "0 0 8px #2563EB",
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "9.5px",
+                  letterSpacing: "0.14em",
+                  color: "#2563EB",
+                  fontWeight: 600,
+                }}
+              >
+                LAT 31.5204° N // LON 74.3587° E [PAKISTAN]
+              </span>
+            </div>
           </div>
         </div>
 

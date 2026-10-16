@@ -294,7 +294,10 @@ export default function HeroBlueprintCanvas() {
     const clock = new THREE.Clock();
 
     const animate = () => {
-      if (!isVisible) return;
+      if (!isVisible) {
+        animId = 0;
+        return;
+      }
       animId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
@@ -343,15 +346,16 @@ export default function HeroBlueprintCanvas() {
       ([entry]) => {
         const wasVisible = isVisible;
         isVisible = entry.isIntersecting;
-        if (isVisible && !wasVisible) {
-          clock.start();
-          animate();
-        } else if (!isVisible && animId) {
+        if (isVisible) {
+          if (!wasVisible || !animId) {
+            animate();
+          }
+        } else if (animId) {
           cancelAnimationFrame(animId);
           animId = 0;
         }
       },
-      { threshold: 0.02 }
+      { threshold: 0.02, rootMargin: "80px 0px" }
     );
     io.observe(mount);
 

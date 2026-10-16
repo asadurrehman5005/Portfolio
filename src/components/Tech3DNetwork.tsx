@@ -352,11 +352,17 @@ export default function Tech3DNetwork({
 
       // Raycast mouse into 3D world plane for node spring reaction
       const rect = canvas.getBoundingClientRect();
+      const inBounds =
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom;
+      isHovered = inBounds;
+
       const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
       const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
       raycaster.ray.intersectPlane(plane, mouseWorld);
-      isHovered = true;
     };
 
     const handlePointerUp = () => {
@@ -372,7 +378,7 @@ export default function Tech3DNetwork({
     window.addEventListener("touchend", handlePointerUp);
 
     // ─── Animation Loop ───
-    let animationFrameId: number;
+    let animationFrameId = 0;
     let lastTime = performance.now();
     let frameCount = 0;
 
@@ -385,7 +391,10 @@ export default function Tech3DNetwork({
     let isVisible = true;
 
     const animate = () => {
-      if (!isVisible) return;
+      if (!isVisible) {
+        animationFrameId = 0;
+        return;
+      }
       animationFrameId = requestAnimationFrame(animate);
       const currentTime = performance.now();
       const delta = Math.min((currentTime - lastTime) * 0.001, 0.1);
@@ -533,15 +542,21 @@ export default function Tech3DNetwork({
       ([entry]) => {
         const wasVisible = isVisible;
         isVisible = entry.isIntersecting;
-        if (isVisible && !wasVisible) {
-          clock.start();
-          animate();
-        } else if (!isVisible && animationFrameId) {
+        if (isVisible) {
+          if (!wasVisible || !animationFrameId) {
+            if (animationFrameId) {
+              cancelAnimationFrame(animationFrameId);
+              animationFrameId = 0;
+            }
+            lastTime = performance.now();
+            animate();
+          }
+        } else if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
           animationFrameId = 0;
         }
       },
-      { threshold: 0.05 }
+      { threshold: 0.02, rootMargin: "80px 0px" }
     );
     visibilityObserver.observe(mount);
 
